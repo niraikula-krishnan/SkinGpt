@@ -1,0 +1,72 @@
+DISEASE: Lupus
+ALSO KNOWN AS: Systemic Lupus Erythematosus (SLE), Cutaneous Lupus
+
+OVERVIEW:
+Lupus is a chronic autoimmune disease where the immune system attacks healthy tissue throughout the body. It commonly affects the skin, joints, kidneys, brain, and other organs. Cutaneous lupus specifically affects the skin and can occur with or without systemic lupus.
+
+CAUSES:
+- Autoimmune disorder with unknown exact cause
+- Genetic factors — certain genes increase susceptibility
+- Environmental triggers such as sunlight, infections, and medications
+- Hormonal factors — more common in women especially during childbearing years
+- Drug-induced lupus from medications like hydralazine, procainamide, isoniazid
+
+SKIN SYMPTOMS:
+- Butterfly rash (malar rash): red rash across cheeks and nose in a butterfly shape — most distinctive sign
+- Photosensitivity: skin rashes triggered or worsened by sun exposure
+- Discoid rash: round scaly patches that can cause scarring
+- Mouth or nose sores
+- Hair loss (alopecia)
+- Raynaud's phenomenon: fingers and toes turning white or blue in cold
+- Vasculitis: inflamed blood vessels in skin causing red spots
+
+GENERAL SYMPTOMS:
+- Extreme fatigue
+- Joint pain and swelling
+- Fever
+- Chest pain when breathing deeply (pleuritis)
+- Kidney problems
+- Headaches and memory problems
+- Anemia
+
+TYPES:
+- Systemic Lupus Erythematosus (SLE): most common, affects multiple organs
+- Cutaneous lupus: mainly affects skin, includes discoid lupus
+- Drug-induced lupus: caused by certain medications, usually reversible
+- Neonatal lupus: rare, affects newborns of mothers with certain antibodies
+
+TREATMENT:
+- NSAIDs for pain and inflammation
+- Antimalarial drugs especially hydroxychloroquine — cornerstone of lupus treatment, reduces flares
+- Corticosteroids for severe flares
+- Immunosuppressants like azathioprine, mycophenolate mofetil, methotrexate
+- Biologics like belimumab (Benlysta) for moderate to severe SLE
+- Topical corticosteroids and sunscreen for skin manifestations
+- Regular monitoring of kidney function and blood counts
+
+IS IT CONTAGIOUS: No, lupus is not contagious.
+
+COMPLICATIONS:
+- Lupus nephritis (kidney inflammation and failure)
+- Cardiovascular disease — increased risk of heart attack and stroke
+- Lung problems including pleuritis and pneumonia
+- Neurological complications including seizures and psychosis
+- Increased infection risk due to immunosuppression
+- Pregnancy complications
+
+WHEN TO SEE A DOCTOR:
+- Butterfly-shaped rash across the face
+- Unexplained extreme fatigue lasting weeks
+- Joint pain in multiple joints without injury
+- Sensitivity to sunlight causing rashes
+- Hair loss not explained by other causes
+- Sores in mouth or nose
+- Any combination of symptoms affecting multiple body systems
+
+PREVENTION:
+- No way to prevent lupus
+- Avoid sun exposure and use SPF 50 sunscreen daily
+- Wear protective clothing and hats outdoors
+- Avoid known triggers like stress and infections
+- Take prescribed medications consistently
+- Regular follow-up with a rheumatologist

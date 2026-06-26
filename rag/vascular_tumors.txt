@@ -1,0 +1,36 @@
+DISEASE: Vascular Tumors
+ALSO KNOWN AS: Hemangiomas, Pyogenic Granuloma, Angiosarcoma
+
+OVERVIEW:
+Vascular tumors are growths made up of blood vessels in or under the skin. Most are benign (hemangiomas) but some can be malignant (angiosarcoma). They range from common birthmarks to rare cancers.
+
+CAUSES:
+- Abnormal proliferation of blood vessel cells
+- Infantile hemangiomas: abnormal blood vessel development in newborns
+- Pyogenic granuloma: skin trauma, hormonal changes, certain medications
+- Angiosarcoma: radiation exposure, chronic lymphedema
+
+SYMPTOMS:
+- Bright red, blue, or purple raised lesion
+- Soft, compressible growth that may blanch when pressed
+- Infantile hemangioma: appears in first weeks of life, grows rapidly then fades
+- Pyogenic granuloma: small red bleeding bump that grows quickly after minor injury
+- Spider angiomas: central red spot with radiating vessels
+
+TREATMENT:
+- Infantile hemangiomas: propranolol (oral) shrinks most hemangiomas
+- Pyogenic granuloma: curettage, laser, or surgical removal
+- Laser therapy for superficial vascular lesions
+- Angiosarcoma: surgery, radiation, chemotherapy
+
+IS IT CONTAGIOUS: No.
+
+WHEN TO SEE A DOCTOR:
+- Rapidly growing vascular lesion
+- Bleeding vascular growth
+- Large or disfiguring hemangioma in an infant
+- Any vascular lesion that changes or causes concern
+
+PREVENTION:
+- No known prevention for most vascular tumors
+- Protect skin from radiation and trauma

@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SkinGPT — AI Chat</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0d1117;
+      color: #e2e8f0;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── header ── */
+    header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 24px;
+      background: #0d1117;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      flex-shrink: 0;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .back-btn {
+      text-decoration: none; color: #4b5563; font-size: .88rem;
+      display: flex; align-items: center; gap: 5px;
+      transition: color .2s;
+    }
+    .back-btn:hover { color: #a5b4fc; }
+    .h-dot { width: 10px; height: 10px; border-radius: 50%; background: linear-gradient(135deg,#6366f1,#10b981); box-shadow: 0 0 10px #6366f1; }
+    header strong { font-size: 1rem; }
+    .accuracy-badge {
+      margin-left: auto; font-size: .78rem; color: #94a3b8;
+      background: rgba(99,102,241,.1); border: 1px solid rgba(99,102,241,.25);
+      padding: 5px 14px; border-radius: 999px;
+      transition: color .3s, background .3s, border-color .3s;
+    }
+    .accuracy-badge.has-value {
+      color: #a5b4fc;
+      background: rgba(99,102,241,.18);
+      border-color: rgba(99,102,241,.45);
+    }
+
+    /* ── messages ── */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px 0 160px;
+      display: flex; flex-direction: column; gap: 0;
+    }
+
+    .msg-row {
+      width: 100%;
+      padding: 18px 0;
+    }
+    .msg-row.bot { background: rgba(255,255,255,.025); }
+
+    .msg-inner {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex; gap: 14px; align-items: flex-start;
+    }
+
+    .avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      font-size: .85rem; font-weight: 700;
+    }
+    .avatar.user { background: linear-gradient(135deg,#6366f1,#14b8a6); color: #fff; }
+    .avatar.bot  { background: rgba(99,102,241,.15); border: 1px solid rgba(99,102,241,.3); color: #818cf8; }
+
+    .msg-content {
+      flex: 1; font-size: .97rem; line-height: 1.75;
+      color: #e2e8f0; white-space: pre-wrap; word-break: break-word;
+      padding-top: 4px;
+    }
+    .msg-img { max-width: 260px; border-radius: 12px; margin-bottom: 8px; display: block; }
+
+    .pred-card {
+      margin-top: 12px;
+      background: rgba(99,102,241,.07);
+      border: 1px solid rgba(99,102,241,.2);
+      border-radius: 14px;
+      padding: 14px 18px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .pred-label { font-size: 1rem; font-weight: 700; color: #a5b4fc; }
+    .pred-conf-row { display: flex; align-items: center; gap: 10px; font-size: .82rem; color: #64748b; }
+    .conf-bar-wrap { flex: 1; height: 7px; background: rgba(255,255,255,.07); border-radius: 999px; overflow: hidden; }
+    .conf-bar { height: 100%; border-radius: 999px; background: linear-gradient(90deg,#6366f1,#10b981); animation: growBar .6s ease; }
+    @keyframes growBar { from { width: 0%; } }
+    .pred-top3 { display: flex; flex-direction: column; gap: 6px; }
+    .t3-item { display: flex; align-items: center; gap: 8px; font-size: .8rem; color: #94a3b8; }
+    .t3-bar-wrap { flex: 1; height: 5px; background: rgba(255,255,255,.05); border-radius: 999px; overflow: hidden; }
+    .t3-bar { height: 100%; border-radius: 999px; background: rgba(99,102,241,.5); }
+    .t3-score { min-width: 44px; text-align: right; color: #475569; }
+    .pred-note { font-size: .78rem; color: #f59e0b; }
+
+    /* ── typing indicator ── */
+    .typing-row { width: 100%; padding: 14px 0; background: rgba(255,255,255,.025); }
+    .typing-inner { max-width: 720px; margin: 0 auto; padding: 0 24px; display: flex; gap: 14px; align-items: center; }
+    .typing-avatar { width: 32px; height: 32px; border-radius: 50%; background: rgba(99,102,241,.15); border: 1px solid rgba(99,102,241,.3); display: flex; align-items: center; justify-content: center; font-size: .85rem; flex-shrink: 0; }
+    .typing-dots { display: flex; gap: 5px; align-items: center; padding: 4px 0; }
+    .typing-dots span {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #6366f1;
+      animation: bounce 1.2s infinite ease-in-out;
+    }
+    .typing-dots span:nth-child(2) { animation-delay: .2s; }
+    .typing-dots span:nth-child(3) { animation-delay: .4s; }
+    @keyframes bounce { 0%,80%,100%{transform:translateY(0);opacity:.4;} 40%{transform:translateY(-6px);opacity:1;} }
+
+    /* ── follow-up chips ── */
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .chip {
+      padding: 6px 14px; border-radius: 999px; font-size: .82rem; cursor: pointer;
+      border: 1px solid rgba(99,102,241,.3); color: #a5b4fc;
+      background: rgba(99,102,241,.07);
+      transition: background .2s, border-color .2s;
+      white-space: nowrap;
+    }
+    .chip:hover { background: rgba(99,102,241,.18); border-color: rgba(99,102,241,.6); }
+
+    /* ── welcome ── */
+    .welcome {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 16px; text-align: center; padding: 40px 24px;
+      color: #4b5563;
+    }
+    .welcome-icon { font-size: 3rem; }
+    .welcome h2 { font-size: 1.5rem; color: #94a3b8; font-weight: 600; }
+    .welcome p { font-size: .95rem; max-width: 400px; line-height: 1.7; }
+
+    /* ── input area ── */
+    .input-area {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      padding: 16px 24px 24px;
+      background: linear-gradient(to top, #0d1117 70%, transparent);
+    }
+
+    .input-box {
+      max-width: 720px; margin: 0 auto;
+      display: flex; align-items: center; gap: 10px;
+      background: #161b27;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 16px;
+      padding: 10px 10px 10px 18px;
+      transition: border-color .2s;
+    }
+    .input-box:focus-within { border-color: rgba(99,102,241,.5); box-shadow: 0 0 0 3px rgba(99,102,241,.08); }
+
+    #msgInput {
+      flex: 1; background: none; border: none; outline: none;
+      color: #e2e8f0; font-size: .97rem; font-family: inherit;
+      resize: none; max-height: 140px; overflow-y: auto;
+      padding: 4px 0; line-height: 1.5;
+    }
+    #msgInput::placeholder { color: #374151; }
+
+    .attach-btn {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: rgba(99,102,241,.1); border: 1px solid rgba(99,102,241,.2);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0; transition: background .2s;
+    }
+    .attach-btn:hover { background: rgba(99,102,241,.22); }
+    .attach-btn svg { width: 17px; height: 17px; stroke: #818cf8; fill: none; }
+    #imgFile { display: none; }
+
+    .send-btn {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, #6366f1, #14b8a6);
+      border: none; cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 16px rgba(99,102,241,.35);
+      transition: transform .15s, box-shadow .15s, opacity .15s;
+      opacity: .5;
+    }
+    .send-btn.ready { opacity: 1; }
+    .send-btn:hover { transform: scale(1.08); box-shadow: 0 0 26px rgba(99,102,241,.55); }
+    .send-btn svg { width: 16px; height: 16px; fill: #fff; }
+
+    /* image preview pill */
+    .preview-pill {
+      display: none;
+      max-width: 720px; margin: 0 auto 10px;
+      align-items: center; gap: 10px;
+      background: rgba(99,102,241,.08); border: 1px solid rgba(99,102,241,.2);
+      border-radius: 12px; padding: 8px 14px;
+      font-size: .82rem; color: #94a3b8;
+    }
+    .preview-pill.show { display: flex; }
+    .preview-pill img { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; }
+    .preview-pill .rm {
+      margin-left: auto; cursor: pointer; color: #6366f1; font-size: 1rem; line-height: 1;
+    }
+    .preview-pill .rm:hover { color: #a5b4fc; }
+
+    .hint-text {
+      max-width: 720px; margin: 8px auto 0;
+      text-align: center; font-size: .75rem; color: #1f2937;
+    }
+
+    /* scrollbar */
+    .messages::-webkit-scrollbar { width: 6px; }
+    .messages::-webkit-scrollbar-track { background: transparent; }
+    .messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,.07); border-radius: 999px; }
+
+    /* disclaimer banner */
+    .disclaimer {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+      background: linear-gradient(135deg, rgba(15,23,42,.98), rgba(10,18,37,.98));
+      border-top: 1px solid rgba(245,158,11,.25);
+      padding: 18px 24px;
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+      animation: slideUp .4s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .disclaimer-icon { font-size: 1.4rem; flex-shrink: 0; }
+    .disclaimer-text { flex: 1; font-size: .85rem; color: #94a3b8; line-height: 1.6; min-width: 200px; }
+    .disclaimer-text strong { color: #fbbf24; }
+    .disclaimer-close {
+      padding: 8px 20px; border-radius: 999px; border: none; cursor: pointer;
+      background: rgba(245,158,11,.15); border: 1px solid rgba(245,158,11,.3);
+      color: #fbbf24; font-size: .85rem; font-weight: 600; white-space: nowrap;
+      transition: background .2s;
+    }
+    .disclaimer-close:hover { background: rgba(245,158,11,.25); }
+
+    @media (max-width: 600px) {
+      .msg-inner { padding: 0 14px; }
+      .input-area { padding: 12px 14px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- one-time disclaimer banner -->
+<div class="disclaimer" id="disclaimer" style="display:none">
+  <span class="disclaimer-icon">⚠️</span>
+  <div class="disclaimer-text">
+    <strong>Medical Disclaimer:</strong> SkinGPT AI is for <strong>informational purposes only</strong> and does not provide medical advice, diagnosis, or treatment. Always consult a qualified clinician for any skin concerns.
+  </div>
+  <button class="disclaimer-close" id="disclaimerClose">I understand</button>
+</div>
+
+<header>
+  <a href="/" class="back-btn">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    Back
+  </a>
+  <span class="h-dot"></span>
+  <strong>SkinGPT AI</strong>
+  <span class="accuracy-badge" id="accuracyBadge">Session Accuracy: —</span>
+</header>
+
+<div class="messages" id="messages">
+  <div class="welcome" id="welcome">
+    <div class="welcome-icon">🩺</div>
+    <h2>How can I help you today?</h2>
+    <p>Upload a skin image and ask a question. I'll analyse it and give you insights based on the prediction.</p>
+  </div>
+</div>
+
+<div class="input-area">
+  <form id="chatForm">
+    <div class="preview-pill" id="previewPill">
+      <img id="previewImg" src="" alt="">
+      <span id="previewName"></span>
+      <span class="rm" id="removeImg">✕</span>
+    </div>
+    <div class="input-box">
+      <label class="attach-btn" for="imgFile" title="Attach image">
+        <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66L9.41 17.41a2 2 0 01-2.83-2.83l8.49-8.48"/>
+        </svg>
+      </label>
+      <input type="file" id="imgFile" accept="image/*">
+      <textarea id="msgInput" rows="1" placeholder="Ask about your skin condition…"></textarea>
+      <button class="send-btn" id="sendBtn" type="submit" title="Send">
+        <svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+      </button>
+    </div>
+    <p class="hint-text">For informational use only — always consult a clinician for diagnosis.</p>
+  </form>
+</div>
+
+<script>
+  // disclaimer — show once per browser session
+  const disc = document.getElementById('disclaimer');
+  if (!sessionStorage.getItem('disc_dismissed')) {
+    disc.style.display = 'flex';
+  }
+  document.getElementById('disclaimerClose').addEventListener('click', () => {
+    disc.style.animation = 'slideUp .3s ease reverse';
+    setTimeout(() => disc.style.display = 'none', 280);
+    sessionStorage.setItem('disc_dismissed', '1');
+  });
+
+  const form        = document.getElementById('chatForm');
+  const msgInput    = document.getElementById('msgInput');
+  const imgFile     = document.getElementById('imgFile');
+  const messagesEl  = document.getElementById('messages');
+  const welcome     = document.getElementById('welcome');
+  const sendBtn     = document.getElementById('sendBtn');
+  const previewPill = document.getElementById('previewPill');
+  const previewImg  = document.getElementById('previewImg');
+  const previewName = document.getElementById('previewName');
+  const removeImg   = document.getElementById('removeImg');
+
+  function updateSendState() {
+    sendBtn.classList.toggle('ready', !!(msgInput.value.trim() || imgFile.files.length));
+  }
+
+  msgInput.addEventListener('input', () => {
+    msgInput.style.height = 'auto';
+    msgInput.style.height = msgInput.scrollHeight + 'px';
+    updateSendState();
+  });
+
+  msgInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); }
+  });
+
+  imgFile.addEventListener('change', () => {
+    if (imgFile.files.length) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        previewImg.src = e.target.result;
+        previewName.textContent = imgFile.files[0].name;
+        previewPill.classList.add('show');
+      };
+      reader.readAsDataURL(imgFile.files[0]);
+    }
+    updateSendState();
+  });
+
+  removeImg.addEventListener('click', () => {
+    imgFile.value = '';
+    previewPill.classList.remove('show');
+    updateSendState();
+  });
+
+  // ── typing indicator ──
+  let typingRow = null;
+  function showTyping() {
+    if (welcome) welcome.style.display = 'none';
+    typingRow = document.createElement('div');
+    typingRow.className = 'typing-row';
+    typingRow.innerHTML = `
+      <div class="typing-inner">
+        <div class="typing-avatar">🩺</div>
+        <div class="typing-dots"><span></span><span></span><span></span></div>
+      </div>`;
+    messagesEl.appendChild(typingRow);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+  function hideTyping() {
+    if (typingRow) { typingRow.remove(); typingRow = null; }
+  }
+
+  // ── add message row ──
+  function addRow(text, role, imgSrc) {
+    if (welcome) welcome.style.display = 'none';
+    const row = document.createElement('div');
+    row.className = 'msg-row ' + role;
+    const inner = document.createElement('div');
+    inner.className = 'msg-inner';
+    const av = document.createElement('div');
+    av.className = 'avatar ' + role;
+    av.textContent = role === 'user' ? 'U' : '🩺';
+    const content = document.createElement('div');
+    content.className = 'msg-content';
+    if (imgSrc) {
+      const img = document.createElement('img');
+      img.src = imgSrc; img.className = 'msg-img';
+      content.appendChild(img);
+    }
+    const textNode = document.createElement('span');
+    textNode.textContent = text;
+    content.appendChild(textNode);
+    inner.appendChild(av);
+    inner.appendChild(content);
+    row.appendChild(inner);
+    messagesEl.appendChild(row);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return { textNode, content };
+  }
+
+  // ── follow-up chips ──
+  const BASE_CHIPS = [
+    'What causes this?',
+    'Is it contagious?',
+    'When should I see a doctor?',
+    'How is it treated?'
+  ];
+  function chipsForLabel(label) {
+    if (!label) return BASE_CHIPS;
+    return [
+      `What is ${label}?`,
+      `What causes ${label}?`,
+      'Is it contagious?',
+      'When should I see a doctor?',
+      'How is it treated?'
+    ];
+  }
+  function renderChips(content, label) {
+    const chips = chipsForLabel(label);
+    const wrap = document.createElement('div');
+    wrap.className = 'chips';
+    chips.forEach(q => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'chip';
+      btn.textContent = q;
+      btn.addEventListener('click', () => {
+        wrap.remove();
+        msgInput.value = q;
+        updateSendState();
+        form.requestSubmit();
+      });
+      wrap.appendChild(btn);
+    });
+    content.appendChild(wrap);
+  }
+
+  // ── prediction card ──
+  function renderPredCard(content, pred, accuracy) {
+    if (!pred || !pred.label) return;
+    const card = document.createElement('div');
+    card.className = 'pred-card';
+    const conf = parseFloat(pred.confidence);
+    const acc  = accuracy ? parseFloat(accuracy) : null;
+
+    const badge = document.getElementById('accuracyBadge');
+    badge.textContent = acc ? 'Session Accuracy: ' + accuracy + '%' : 'Confidence: ' + pred.confidence + '%';
+    badge.classList.add('has-value');
+
+    card.innerHTML = `
+      <div class="pred-label">🔬 ${pred.label}</div>
+      <div class="pred-conf-row">
+        <span style="min-width:110px">Confidence</span>
+        <div class="conf-bar-wrap"><div class="conf-bar cbar" style="width:${conf}%"></div></div>
+        <span><strong>${pred.confidence}%</strong></span>
+      </div>
+      <div class="pred-conf-row">
+        <span style="min-width:110px">Session Accuracy</span>
+        <div class="conf-bar-wrap"><div class="conf-bar abar" style="width:${acc !== null ? acc + '%' : '0%'};background:linear-gradient(90deg,#10b981,#06b6d4)"></div></div>
+        <span><strong>${acc !== null ? accuracy + '%' : '—'}</strong></span>
+      </div>
+      <div class="pred-top3" style="margin-top:4px">
+        ${(pred.top3 || []).map(t => `
+          <div class="t3-item">
+            <span style="min-width:150px;">${t.label}</span>
+            <div class="t3-bar-wrap"><div class="t3-bar" style="width:${t.score}%"></div></div>
+            <span class="t3-score">${t.score}%</span>
+          </div>`).join('')}
+      </div>
+      ${pred.note ? `<div class="pred-note">⚠️ ${pred.note}</div>` : ''}
+    `;
+    content.appendChild(card);
+  }
+
+  // session id — unique per browser tab
+  const SESSION_ID = Math.random().toString(36).slice(2);
+
+  // ── submit ──
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const text = msgInput.value.trim();
+    if (!text && !imgFile.files.length) return;
+
+    document.querySelectorAll('.chips').forEach(c => c.remove());
+
+    const localPreview = imgFile.files.length ? URL.createObjectURL(imgFile.files[0]) : null;
+    addRow(text || '📷 Image attached', 'user', localPreview);
+
+    msgInput.value = '';
+    msgInput.style.height = 'auto';
+    previewPill.classList.remove('show');
+    updateSendState();
+    showTyping();
+
+    const data = new FormData();
+    data.append('message', text);
+    data.append('session_id', SESSION_ID);
+    const fileToSend = imgFile.files[0];
+    if (fileToSend) { data.append('image', fileToSend); imgFile.value = ''; }
+
+    try {
+      const res  = await fetch('/chat', { method: 'POST', body: data });
+      const json = await res.json();
+      hideTyping();
+      const { textNode, content } = addRow(json.reply || 'No reply.', 'bot');
+      if (json.image_url) {
+        const img = document.createElement('img');
+        img.src = json.image_url; img.className = 'msg-img';
+        content.insertBefore(img, textNode);
+      }
+      if (json.prediction) {
+        renderPredCard(content, json.prediction, json.accuracy);
+        renderChips(content, json.prediction.label);
+      } else {
+        renderChips(content, null);
+      }
+    } catch (err) {
+      hideTyping();
+      addRow('Error: ' + err.message, 'bot');
+    }
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  });
+</script>
+</body>
+</html>

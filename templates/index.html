@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SkinGPT — AI Skin Disease Predictor</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0a0a0f;
+      color: #e2e8f0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .bg-glow {
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(99,102,241,.28) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 80%, rgba(16,185,129,.22) 0%, transparent 60%);
+      animation: pulse 8s ease-in-out infinite alternate;
+    }
+    @keyframes pulse { from { opacity: .7; } to { opacity: 1; } }
+
+    .particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .dot { position: absolute; border-radius: 50%; animation: float linear infinite; }
+    @keyframes float {
+      from { transform: translateY(110vh); opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: .5; }
+      to   { transform: translateY(-10vh); opacity: 0; }
+    }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 40px;
+      background: rgba(10,10,15,.75);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.05rem; letter-spacing: -.01em; }
+    .nav-dot { width: 10px; height: 10px; border-radius: 50%; background: linear-gradient(135deg,#6366f1,#10b981); box-shadow: 0 0 10px #6366f1; }
+
+
+    .page {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      min-height: 100vh;
+      padding: 100px 24px 60px;
+      text-align: center;
+    }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 18px; border-radius: 999px;
+      border: 1px solid rgba(99,102,241,.4);
+      font-size: .76rem; letter-spacing: .1em; text-transform: uppercase;
+      color: #818cf8; background: rgba(99,102,241,.08);
+      margin-bottom: 30px;
+    }
+    .live { width: 7px; height: 7px; border-radius: 50%; background: #10b981; box-shadow: 0 0 7px #10b981; animation: blink 1.5s infinite; }
+    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.2;} }
+
+    h1 {
+      font-size: clamp(2.6rem, 6vw, 4.6rem);
+      font-weight: 800; line-height: 1.07; letter-spacing: -.03em;
+      margin-bottom: 22px;
+    }
+    .g {
+      background: linear-gradient(135deg, #818cf8 0%, #10b981 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+
+    .subtitle {
+      max-width: 560px; font-size: 1.08rem; color: #94a3b8;
+      line-height: 1.8; margin-bottom: 48px;
+    }
+
+    .pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 52px; }
+    .pill {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 18px; border-radius: 12px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.07);
+      font-size: .87rem; color: #cbd5e1;
+      transition: border-color .2s, background .2s;
+    }
+    .pill:hover { border-color: rgba(99,102,241,.45); background: rgba(99,102,241,.07); }
+
+    .cta-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .cta {
+      display: inline-flex; align-items: center; gap: 12px;
+      padding: 17px 46px; border-radius: 999px;
+      background: linear-gradient(135deg, #4f46e5, #10b981);
+      color: #fff; font-size: 1.05rem; font-weight: 700; text-decoration: none;
+      box-shadow: 0 0 50px rgba(79,70,229,.4);
+      transition: transform .2s, box-shadow .2s;
+      position: relative; overflow: hidden;
+    }
+    .cta::after { content:''; position:absolute; inset:0; background:rgba(255,255,255,0); transition:background .2s; }
+    .cta:hover { transform: translateY(-3px); box-shadow: 0 0 72px rgba(79,70,229,.65); }
+    .cta:hover::after { background: rgba(255,255,255,.07); }
+    .arrow { display:inline-block; transition: transform .2s; }
+    .cta:hover .arrow { transform: translateX(5px); }
+    .cta-note { font-size: .8rem; color: #334155; }
+
+    /* how it works */
+    .how { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 0 24px 60px; }
+    .how-title { text-align: center; font-size: 1.3rem; font-weight: 700; color: #94a3b8; margin-bottom: 32px; letter-spacing: -.01em; }
+    .how-steps { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+    .step {
+      flex: 1; min-width: 200px; max-width: 240px;
+      background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07);
+      border-radius: 18px; padding: 24px 20px; text-align: center;
+      transition: border-color .2s, background .2s;
+    }
+    .step:hover { border-color: rgba(99,102,241,.4); background: rgba(99,102,241,.06); }
+    .step-num { font-size: 1.7rem; margin-bottom: 12px; }
+    .step-title { font-size: .95rem; font-weight: 700; color: #e2e8f0; margin-bottom: 6px; }
+    .step-desc { font-size: .82rem; color: #475569; line-height: 1.6; }
+
+    /* trust bar */
+    .trust { position: relative; z-index: 1; display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; padding: 0 24px 60px; }
+    .trust-badge {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 18px; border-radius: 999px;
+      background: rgba(16,185,129,.06); border: 1px solid rgba(16,185,129,.2);
+      font-size: .82rem; color: #6ee7b7;
+    }
+    .trust-badge svg { width: 14px; height: 14px; stroke: #10b981; fill: none; flex-shrink: 0; }
+
+    footer {
+      position: relative; z-index: 1;
+      margin-top: 60px;
+      background: rgba(255,255,255,.03);
+      border-top: 1px solid rgba(255,255,255,.07);
+      padding: 32px 40px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px;
+    }
+    .footer-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: .95rem; color: #e2e8f0; }
+    .footer-dot { width: 8px; height: 8px; border-radius: 50%; background: linear-gradient(135deg,#6366f1,#10b981); box-shadow: 0 0 8px #6366f1; }
+    .footer-links { display: flex; gap: 24px; }
+    .footer-links a { color: #64748b; font-size: .85rem; text-decoration: none; transition: color .2s; }
+    .footer-links a:hover { color: #a5b4fc; }
+    .footer-copy { font-size: .8rem; color: #334155; width: 100%; text-align: center; margin-top: 8px; border-top: 1px solid rgba(255,255,255,.04); padding-top: 16px; }
+  </style>
+</head>
+<body>
+
+<div class="bg-glow"></div>
+<div class="particles" id="pts"></div>
+
+<nav>
+  <div class="nav-logo">
+    <span class="nav-dot"></span>
+    SkinGPT AI
+  </div>
+
+</nav>
+
+<div class="page">
+  <div class="badge"><span class="live"></span> AI-Powered · Live Model</div>
+
+  <h1>Detect Skin Conditions<br><span class="g">Instantly with AI</span></h1>
+
+  <p class="subtitle">
+    Upload a photo of your skin and our model identifies potential conditions,
+    shows confidence scores, and lets you chat with an AI assistant for deeper context.
+  </p>
+
+  <div class="pills">
+    <div class="pill">🔬 EfficientNet Model</div>
+    <div class="pill">⚡ Instant Predictions</div>
+    <div class="pill">🤖 AI Chat Assistant</div>
+  </div>
+
+  <div class="cta-wrap">
+    <a href="/chat" class="cta">
+      Start Predicting <span class="arrow">→</span>
+    </a>
+    <span class="cta-note">No sign-up required · Free to use</span>
+  </div>
+
+</div>
+
+<!-- how it works -->
+<section class="how">
+  <div class="how-title">How it works</div>
+  <div class="how-steps">
+    <div class="step">
+      <div class="step-num">📸</div>
+      <div class="step-title">1. Upload</div>
+      <div class="step-desc">Take or choose a clear, well-lit photo of the affected skin area.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">🔬</div>
+      <div class="step-title">2. Predict</div>
+      <div class="step-desc">Our EfficientNet model analyses the image and returns the top condition with confidence scores.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">🤖</div>
+      <div class="step-title">3. Chat</div>
+      <div class="step-desc">Ask the AI assistant follow-up questions about the condition, causes, and next steps.</div>
+    </div>
+  </div>
+</section>
+
+<!-- trust badges -->
+<div class="trust">
+  <div class="trust-badge">
+    <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    No images stored
+  </div>
+ 
+  <div class="trust-badge">
+    <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    For informational use only
+  </div>
+  <div class="trust-badge">
+    <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+    Always consult a clinician
+  </div>
+</div>
+  <div class="footer-brand">
+    <span class="footer-dot"></span>
+  </div>
+  <div class="footer-links">
+    <a href="/">Home</a>
+    <a href="/chat">Chat</a>
+    <a href="mailto:info@Nigsoft.com">Contact</a>
+  </div>
+  <div class="footer-copy">© 2026 Nigsoft Solutions · info@Nigsoft.com · All rights reserved.</div>
+</footer>
+
+<script>
+  const c = document.getElementById('pts');
+  for (let i = 0; i < 24; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot';
+    const s = Math.random() * 5 + 3;
+    const col = Math.random() > .5 ? '99,102,241' : '16,185,129';
+    d.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;background:rgba(${col},.35);animation-duration:${Math.random()*18+10}s;animation-delay:${Math.random()*14}s;`;
+    c.appendChild(d);
+  }
+</script>
+</body>
+</html>
+   

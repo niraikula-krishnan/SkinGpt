@@ -1,0 +1,52 @@
+DISEASE: Skin Cancer
+ALSO KNOWN AS: Melanoma, Basal Cell Carcinoma, Squamous Cell Carcinoma
+
+OVERVIEW:
+Skin cancer is the abnormal growth of skin cells, most often caused by UV radiation. It is the most common cancer worldwide. The three main types are basal cell carcinoma, squamous cell carcinoma, and melanoma (most dangerous).
+
+CAUSES:
+- UV radiation from sunlight and tanning beds
+- Fair skin, light hair, light eyes
+- History of sunburns especially in childhood
+- Family history of skin cancer
+- Weakened immune system
+- Exposure to radiation or certain chemicals
+
+SYMPTOMS — BASAL CELL CARCINOMA:
+- Pearly or waxy bump on face, ears, neck
+- Flat flesh-colored or brown scar-like lesion
+- Bleeding or scabbing sore that heals and returns
+
+SYMPTOMS — SQUAMOUS CELL CARCINOMA:
+- Firm red nodule on face, lips, ears, hands
+- Flat lesion with scaly crusted surface
+- Sore that heals and reopens
+
+SYMPTOMS — MELANOMA (ABCDE):
+- Asymmetry: uneven shape
+- Border: irregular, ragged edges
+- Color: multiple shades
+- Diameter: larger than 6mm
+- Evolving: changing in any way
+
+TREATMENT:
+- Mohs surgery: precise layer-by-layer removal
+- Excision: surgical removal with margins
+- Radiation therapy
+- Chemotherapy or immunotherapy for advanced melanoma
+- Targeted therapy for specific gene mutations
+- Cryotherapy for early superficial lesions
+
+IS IT CONTAGIOUS: No.
+
+WHEN TO SEE A DOCTOR:
+- Any new unusual skin growth or sore that does not heal
+- Mole changing in size, shape, or color
+- Any ABCDE warning sign
+
+PREVENTION:
+- Apply SPF 50+ sunscreen every day
+- Avoid tanning beds completely
+- Wear protective clothing and hats
+- Perform monthly skin self-examinations
+- Annual skin check with a dermatologist

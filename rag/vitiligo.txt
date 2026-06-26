@@ -1,0 +1,47 @@
+DISEASE: Vitiligo
+
+OVERVIEW:
+Vitiligo is a chronic autoimmune condition where the immune system destroys melanocytes (pigment-producing cells), causing white patches to appear on skin. It can affect any area of the body and is more visible on darker skin tones.
+
+CAUSES:
+- Autoimmune destruction of melanocytes
+- Genetic predisposition — family history increases risk
+- Triggers: sunburn, skin trauma, stress, chemical exposure
+- Associated with other autoimmune diseases: thyroid disorders, type 1 diabetes, alopecia areata
+
+SYMPTOMS:
+- White or depigmented patches on skin
+- Patches most common on face, hands, arms, feet, genitals
+- Hair in affected areas may turn white
+- Patches may expand over time
+- Premature whitening of hair, eyelashes, eyebrows
+- No pain or itching in most cases
+
+TYPES:
+- Generalized: most common, widespread patches on many body parts
+- Segmental: affects only one side or segment of body, more stable
+- Focal: limited to one or few areas
+- Universal: rare, affects most of the body surface
+
+TREATMENT:
+- Topical corticosteroids to restore pigment in early stages
+- Topical calcineurin inhibitors: tacrolimus, pimecrolimus
+- Ruxolitinib cream (Opzelura): FDA-approved targeted therapy
+- Phototherapy: narrowband UVB light therapy — most effective treatment
+- Oral JAK inhibitors for widespread vitiligo
+- Skin grafting or melanocyte transplantation for stable vitiligo
+- Cosmetic camouflage makeup and self-tanner
+
+IS IT CONTAGIOUS: No, vitiligo is not contagious.
+
+WHEN TO SEE A DOCTOR:
+- White patches appearing or spreading on skin
+- Family history of vitiligo or autoimmune diseases
+- Patches on face or other visible areas causing distress
+- Symptoms of associated thyroid disease: fatigue, weight changes
+
+PREVENTION:
+- No known way to prevent vitiligo
+- Protect depigmented patches with SPF 50+ sunscreen as they burn easily
+- Manage stress
+- Regular thyroid function tests if diagnosed

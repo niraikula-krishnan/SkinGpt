@@ -1,0 +1,11 @@
+tensorflow
+numpy
+Pillow
+flask
+werkzeug
+scikit-learn
+langchain
+langchain-groq
+langchain-core
+langchain-community
+python-dotenv

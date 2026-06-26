@@ -1,0 +1,29 @@
+DISEASE: Unknown or Normal Skin
+ALSO KNOWN AS: Normal Skin, Unidentified Skin Condition
+
+OVERVIEW:
+Sometimes a skin image may not clearly match a known disease pattern, or the skin may appear completely normal. A normal skin finding means no active disease is detected.
+
+WHAT NORMAL SKIN LOOKS LIKE:
+- Even skin tone without persistent redness or patches
+- Smooth texture without unusual growths or lesions
+- No blisters, sores, or persistent rashes
+- Hydrated, not excessively dry or oily
+
+WHEN THE MODEL SAYS UNKNOWN:
+- The image quality may be poor or too distant
+- The skin area shown may not have enough diagnostic features
+- The condition may not be in the training dataset
+- Lighting or angle may affect detection
+
+WHAT TO DO:
+- Upload a clearer, well-lit, close-up photo of the affected area
+- Describe your symptoms to get better guidance from the AI assistant
+- If concerned about a skin condition, consult a dermatologist
+- Do not rely solely on AI prediction for medical decisions
+
+WHEN TO SEE A DOCTOR:
+- Any skin change that persists more than 2-3 weeks
+- Symptoms like itching, pain, bleeding, or spreading rash
+- Lesions that change in size, shape, or color
+- Any concern about skin health regardless of AI result

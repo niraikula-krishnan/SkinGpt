@@ -1,0 +1,41 @@
+DISEASE: Vasculitis
+ALSO KNOWN AS: Skin Vasculitis, Cutaneous Vasculitis, Leukocytoclastic Vasculitis
+
+OVERVIEW:
+Vasculitis is inflammation of blood vessels in the skin causing them to thicken, narrow, or scar. It can affect small, medium, or large vessels and may be limited to skin or involve internal organs.
+
+CAUSES:
+- Autoimmune reaction attacking blood vessel walls
+- Infections: hepatitis B, hepatitis C, strep infections
+- Medications: antibiotics, diuretics, allopurinol
+- Underlying conditions: lupus, rheumatoid arthritis, inflammatory bowel disease
+- Often no identifiable cause
+
+SYMPTOMS:
+- Palpable purpura: raised purple or red spots that do not blanch when pressed
+- Skin ulcers in severe cases
+- Livedo reticularis: lacy purple net-like pattern on skin
+- Nodules under skin
+- Urticaria lasting more than 24 hours
+- Itching or burning sensation
+- Joint pain and swelling
+- Fever and fatigue if internal organs involved
+
+TREATMENT:
+- Mild skin-only vasculitis may resolve on its own
+- Remove triggering medication or treat underlying infection
+- Corticosteroids for moderate to severe cases
+- Immunosuppressants: azathioprine, cyclophosphamide for severe disease
+- Colchicine or dapsone for recurrent cases
+
+IS IT CONTAGIOUS: No.
+
+WHEN TO SEE A DOCTOR:
+- Purple or red spots that do not fade with pressure
+- Skin ulcers that do not heal
+- Joint pain, fever, or organ symptoms alongside skin rash
+
+PREVENTION:
+- Treat underlying infections promptly
+- Avoid medications known to trigger vasculitis
+- Manage autoimmune conditions with regular medical care

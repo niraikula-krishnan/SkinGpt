@@ -1,0 +1,43 @@
+DISEASE: Psoriasis
+
+OVERVIEW:
+Psoriasis is a chronic autoimmune skin condition that causes skin cells to multiply up to 10 times faster than normal, resulting in scaly red patches. It is not curable but manageable.
+
+CAUSES:
+- Autoimmune dysfunction — T cells attack healthy skin cells
+- Genetics: 1 in 3 people with psoriasis have a family member with it
+- Triggers: stress, infections (strep throat), medications (lithium, beta blockers), skin injury, smoking, alcohol
+
+SYMPTOMS:
+- Red patches of skin covered with thick silvery scales (plaques)
+- Dry, cracked skin that may bleed
+- Itching, burning, or soreness
+- Thickened, pitted, or ridged nails
+- Swollen and stiff joints (psoriatic arthritis)
+- Most common on elbows, knees, scalp, lower back
+
+TYPES:
+- Plaque psoriasis: most common type
+- Guttate psoriasis: small drop-shaped lesions, often triggered by strep
+- Pustular psoriasis: pus-filled blisters
+- Inverse psoriasis: smooth red lesions in skin folds
+- Erythrodermic psoriasis: severe, affects entire body
+
+TREATMENT:
+- Topical: corticosteroids, vitamin D analogues, retinoids, coal tar
+- Phototherapy: UVB light therapy
+- Oral: methotrexate, cyclosporine, acitretin
+- Biologics: TNF inhibitors (adalimumab), IL-17 inhibitors (secukinumab), IL-23 inhibitors
+
+IS IT CONTAGIOUS: No.
+
+WHEN TO SEE A DOCTOR:
+- Widespread rash covering large body areas
+- Joint pain or swelling accompanying skin symptoms
+- Skin not responding to over-the-counter treatments
+
+PREVENTION:
+- Manage stress
+- Avoid known triggers
+- Moisturise skin regularly
+- Limit alcohol and quit smoking

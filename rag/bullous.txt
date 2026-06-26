@@ -1,0 +1,58 @@
+DISEASE: Bullous
+ALSO KNOWN AS: Bullous Pemphigoid, Blistering Skin Disease
+
+OVERVIEW:
+Bullous pemphigoid is a rare autoimmune skin disorder that causes large, fluid-filled blisters to form on the skin. The immune system mistakenly attacks the thin layer of tissue below the outer layer of skin. It primarily affects older adults over age 60 and can be life-threatening if untreated.
+
+CAUSES:
+- Autoimmune disorder where the immune system produces antibodies that attack hemidesmosomes, proteins that connect the outer skin layer (epidermis) to the inner layer (dermis)
+- Exact trigger is unknown
+- Medications can trigger it: diuretics like furosemide, antibiotics, NSAIDs, and certain blood pressure drugs
+- UV light or radiation therapy can trigger it
+- Certain medical conditions like neurological diseases and psoriasis increase risk
+
+SYMPTOMS:
+- Large tense fluid-filled blisters usually greater than 1cm
+- Blisters appear most commonly on the arms, legs, abdomen, and skin folds
+- Blisters do not break easily and feel firm
+- Reddened, itchy skin before blisters appear
+- Intense itching even before blisters form
+- Blisters may contain clear or blood-tinged fluid
+- Mucous membranes like the mouth may be affected in some cases
+- After blisters break, raw sore areas form
+
+TYPES:
+- Bullous pemphigoid: most common, large blisters on skin
+- Pemphigus vulgaris: more severe, blisters inside mouth and skin, blisters break easily
+- Dermatitis herpetiformis: associated with celiac disease, intensely itchy
+- Epidermolysis bullosa: genetic condition causing fragile blistering skin
+
+TREATMENT:
+- Corticosteroids such as prednisone to reduce immune response (main treatment)
+- Topical corticosteroid creams for mild cases
+- Immunosuppressant drugs like azathioprine, methotrexate, mycophenolate mofetil
+- Antibiotics with anti-inflammatory properties like doxycycline and tetracycline
+- Biological therapy with rituximab for severe or treatment-resistant cases
+- Wound care for broken blisters to prevent infection
+- Treatment continues for months to years
+
+IS IT CONTAGIOUS: No, bullous disease is not contagious.
+
+COMPLICATIONS:
+- Skin infections from broken blisters
+- Side effects of long-term corticosteroid use including osteoporosis and diabetes
+- Scarring after blisters heal
+- Increased mortality in elderly patients with other health conditions
+
+WHEN TO SEE A DOCTOR:
+- Large or widespread blisters appearing suddenly
+- Blisters inside the mouth or on mucous membranes
+- Severe itching with reddened skin before blisters appear
+- Any sign of infection in blistered areas such as warmth, pus, or spreading redness
+- Existing blisters not healing or worsening
+
+PREVENTION:
+- No known way to prevent bullous pemphigoid
+- Avoid known triggering medications if possible under medical supervision
+- Protect skin from excessive sun exposure
+- Keep skin moisturised to maintain skin barrier

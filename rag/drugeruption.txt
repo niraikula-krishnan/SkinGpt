@@ -1,0 +1,37 @@
+DISEASE: Drug Eruption
+ALSO KNOWN AS: Drug Rash, Medication Reaction, Adverse Drug Reaction
+
+OVERVIEW:
+Drug eruption is a skin reaction caused by a medication. It is one of the most common adverse drug reactions and can range from mild rashes to life-threatening conditions like Stevens-Johnson syndrome.
+
+CAUSES:
+- Allergic immune response to a medication
+- Common culprits: antibiotics (penicillin, sulfa), NSAIDs, anticonvulsants, allopurinol
+- Can occur days to weeks after starting a new medication
+- Sometimes caused by drug interactions
+
+SYMPTOMS:
+- Morbilliform (measles-like) rash: most common type, red flat or raised spots
+- Urticaria (hives): itchy raised welts
+- Photosensitivity: rash on sun-exposed areas
+- Fixed drug eruption: same spot reacts every time drug is taken
+- Stevens-Johnson syndrome (severe): painful blistering of skin and mucous membranes
+- Itching, burning sensation
+
+TREATMENT:
+- Stop the offending medication immediately (under medical supervision)
+- Antihistamines for itching
+- Topical or oral corticosteroids for severe reactions
+- Emergency care for Stevens-Johnson syndrome
+
+IS IT CONTAGIOUS: No.
+
+WHEN TO SEE A DOCTOR:
+- Rash appears after starting a new medication
+- Blistering, swelling of face or throat, difficulty breathing — seek emergency care
+- Rash spreading rapidly
+
+PREVENTION:
+- Inform doctors of all drug allergies
+- Carry a medical alert card if allergic to common medications
+- Never restart a medication that caused a previous reaction without medical advice
