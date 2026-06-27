@@ -36,6 +36,15 @@
     .back-btn:hover { color: #a5b4fc; }
     .h-dot { width: 10px; height: 10px; border-radius: 50%; background: linear-gradient(135deg,#6366f1,#10b981); box-shadow: 0 0 10px #6366f1; }
     header strong { font-size: 1rem; }
+    .new-chat-btn {
+      margin-left: auto;
+      padding: 6px 16px; border-radius: 999px;
+      background: rgba(99,102,241,.1); border: 1px solid rgba(99,102,241,.25);
+      color: #a5b4fc; font-size: .78rem; font-weight: 600; cursor: pointer;
+      transition: background .2s, border-color .2s;
+      white-space: nowrap;
+    }
+    .new-chat-btn:hover { background: rgba(99,102,241,.22); border-color: rgba(99,102,241,.5); }
     .accuracy-badge {
       margin-left: auto; font-size: .78rem; color: #94a3b8;
       background: rgba(99,102,241,.1); border: 1px solid rgba(99,102,241,.25);
@@ -260,6 +269,7 @@
   </a>
   <span class="h-dot"></span>
   <strong>SkinGPT AI</strong>
+  <button class="new-chat-btn" id="newChatBtn" title="Start a new conversation">+ New Chat</button>
   <span class="accuracy-badge" id="accuracyBadge">Session Accuracy: —</span>
 </header>
 
@@ -470,8 +480,29 @@
     content.appendChild(card);
   }
 
-  // session id — unique per browser tab
-  const SESSION_ID = Math.random().toString(36).slice(2);
+  // ── new chat button ──
+  const newChatBtn = document.getElementById('newChatBtn');
+  let SESSION_ID = Math.random().toString(36).slice(2);
+
+  newChatBtn.addEventListener('click', () => {
+    // Clear all message rows and chips
+    document.querySelectorAll('.msg-row, .chips, .typing-row, .pred-card').forEach(el => el.remove());
+    // Show welcome screen
+    welcome.style.display = 'flex';
+    // Reset accuracy badge
+    const badge = document.getElementById('accuracyBadge');
+    badge.textContent = 'Session Accuracy: —';
+    badge.classList.remove('has-value');
+    // Clear input
+    msgInput.value = '';
+    msgInput.style.height = 'auto';
+    // Remove any pending image
+    imgFile.value = '';
+    previewPill.classList.remove('show');
+    updateSendState();
+    // New session id so server history is fresh
+    SESSION_ID = Math.random().toString(36).slice(2);
+  });
 
   // ── submit ──
   form.addEventListener('submit', async e => {
