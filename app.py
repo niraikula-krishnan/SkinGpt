@@ -3,8 +3,12 @@ import os
 import uuid
 import numpy as np
 import tensorflow as tf
+from dotenv import load_dotenv
 from PIL import Image as PILImage
 from rag import retrieve
+
+load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env'))
+
 preprocess_input = tf.keras.applications.efficientnet.preprocess_input
 from flask import Flask, jsonify, render_template, request, send_from_directory, url_for
 from werkzeug.utils import secure_filename
@@ -17,15 +21,24 @@ CONFIDENCE_THRESHOLD = 0.40
 
 # Optional OpenAI integration: set OPENAI_API_KEY in environment to enable
 # Optional Groq API key: set GROQ_API_KEY environment variable to enable
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "").strip()
 
 client = None
 
-try:
-    if GROQ_API_KEY:
-        client = ChatGroq(api_key=GROQ_API_KEY, model="llama-3.3-70b-versatile")
-except Exception:
-    client = None
+def get_llm_client():
+    global client
+    if client is not None:
+        return client
+    key = os.environ.get("GROQ_API_KEY", "").strip()
+    if not key:
+        return None
+    try:
+        client = ChatGroq(api_key=key, model="llama-3.3-70b-versatile")
+        return client
+    except Exception:
+        return None
+
+get_llm_client()
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, UPLOAD_FOLDER)
@@ -133,7 +146,113 @@ def uploaded_file(filename):
 
 # In-memory session store: session_id -> list of {"role", "content"} dicts
 _session_store: dict[str, list[dict]] = {}
-MAX_HISTORY = 10  # keep last 10 conversation turns
+_session_analytics: dict[str, dict[str, int]] = {}
+_session_last_disease: dict[str, str | None] = {}
+_session_meta: dict[str, dict] = {}
+MAX_HISTORY = 20  # keep last 20 messages (10 turns)
+
+
+def _display_disease(name: str) -> str:
+    return name.replace('_', ' ')
+
+
+def _find_diseases_ordered(text: str) -> list[str]:
+    """Return disease display names in the order they appear in the message."""
+    if not class_names or not text:
+        return []
+    lower = text.lower()
+    matches: list[tuple[int, str]] = []
+    for name in class_names:
+        display = _display_disease(name)
+        variants = (
+            name.lower(),
+            display.lower(),
+            name.lower().replace('_', ' '),
+            name.lower().replace('_', ''),
+        )
+        positions = [lower.find(v) for v in variants if v in lower]
+        if positions:
+            matches.append((min(positions), display))
+    matches.sort(key=lambda item: item[0])
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for _, display in matches:
+        if display not in seen:
+            seen.add(display)
+            ordered.append(display)
+    return ordered
+
+
+def _record_disease(session_id: str, disease: str) -> None:
+    """Count a disease only when it changes from the previous one in this session."""
+    display = _display_disease(disease)
+    if _session_last_disease.get(session_id) == display:
+        return
+    counts = _session_analytics.setdefault(session_id, {})
+    counts[display] = counts.get(display, 0) + 1
+    _session_last_disease[session_id] = display
+
+
+def _update_session_analytics(session_id: str, user_message: str, prediction_label: str = '') -> None:
+    if prediction_label:
+        _record_disease(session_id, prediction_label)
+    if user_message and not _is_analytics_request(user_message):
+        for disease in _find_diseases_ordered(user_message):
+            _record_disease(session_id, disease)
+
+
+def _is_analytics_request(text: str) -> bool:
+    t = text.lower().strip()
+    if not t:
+        return False
+    triggers = (
+        'provide the analytics',
+        'provide analytics',
+        'show analytics',
+        'show the analytics',
+        'session analytics',
+        'analytics of this session',
+        'analysis of this session',
+        'session statistics',
+        'session stats',
+        'show session chart',
+    )
+    return any(p in t for p in triggers)
+
+
+def _session_context_block(session_id: str) -> str:
+    """Brief summary so the LLM can answer follow-ups in the same chat session."""
+    parts: list[str] = []
+    meta = _session_meta.get(session_id, {})
+    last_pred = meta.get('last_prediction')
+    if last_pred:
+        parts.append(
+            f"Latest image prediction in this chat: {last_pred['label']} "
+            f"({last_pred['confidence']}% confidence)"
+        )
+    counts = _session_analytics.get(session_id, {})
+    if counts:
+        summary = ', '.join(f"{name} ({count}x)" for name, count in counts.items())
+        parts.append(f"Diseases discussed this session: {summary}")
+    if not parts:
+        return ''
+    return (
+        'Session context (use for follow-up questions like "it", "this", or "that condition"):\n'
+        + '\n'.join(parts)
+    )
+
+
+def _update_session_meta(session_id: str, prediction: dict | None, user_message: str) -> None:
+    meta = _session_meta.setdefault(session_id, {})
+    if prediction and prediction.get('label'):
+        meta['last_prediction'] = {
+            'label': _display_disease(prediction['label']),
+            'confidence': prediction.get('confidence', ''),
+        }
+    if user_message:
+        diseases = _find_diseases_ordered(user_message)
+        if diseases:
+            meta['last_topic'] = diseases[-1]
 
 
 @app.route('/chat', methods=['GET', 'POST'])
@@ -160,9 +279,12 @@ def chat():
 
     system_prompt = (
         'You are a helpful medical assistant that discusses skin disease predictions. '
+        'You are in an ongoing chat session — read the conversation history and session context '
+        'and answer follow-up questions accordingly (e.g. if the user asks "what causes it?", '
+        'refer to the disease or prediction discussed earlier in this session). '
         'When verified disease knowledge is provided below, use it as your PRIMARY source to answer accurately. '
         'When an image prediction is provided, include it in your reasoning but do not give definitive medical advice. '
-        'Always encourage users to consult a clinician for diagnosis and treatment,also provide answers to the user'
+        'Always encourage users to consult a clinician for diagnosis and treatment.'
     )
 
     context = ''
@@ -187,6 +309,40 @@ def chat():
 
     history = _session_store[session_id]
 
+    if _is_analytics_request(user_message):
+        counts = dict(_session_analytics.get(session_id, {}))
+        if counts:
+            assistant_reply = (
+                'Here is your session analytics. Each bar shows how many separate times '
+                'you discussed each disease in this session (repeated back-to-back questions '
+                'about the same disease count once until you switch to another disease).'
+            )
+        else:
+            assistant_reply = (
+                'No analytics yet for this session. Upload a skin image or ask about a disease first, '
+                'then request analytics again.'
+            )
+        history.append({"role": "user", "content": user_message})
+        history.append({"role": "assistant", "content": assistant_reply})
+        if len(history) > MAX_HISTORY * 2:
+            history[:2] = []
+        return jsonify({
+            'reply': assistant_reply,
+            'prediction': prediction,
+            'image_url': image_url,
+            'accuracy': prediction.get('accuracy') if prediction else get_session_accuracy(),
+            'show_chart': bool(counts),
+            'analytics': counts,
+        })
+
+    _update_session_analytics(session_id, user_message, prediction_label)
+    _update_session_meta(session_id, prediction, user_message)
+
+    session_ctx = _session_context_block(session_id)
+    full_system_prompt = system_prompt
+    if session_ctx:
+        full_system_prompt += f'\n\n{session_ctx}'
+
     # Build current user message with context appended for the LLM
     current_user_content = user_message
     if context:
@@ -194,12 +350,13 @@ def chat():
 
     # Build messages: system + stored history + current user message
     messages = [
-        {"role": "system", "content": system_prompt},
+        {"role": "system", "content": full_system_prompt},
         *history[-MAX_HISTORY:],
         {"role": "user", "content": current_user_content}
     ]
 
-    if client is not None:
+    llm = get_llm_client()
+    if llm is not None:
         try:
             lc_messages = []
             for msg in messages:
@@ -209,21 +366,28 @@ def chat():
                     lc_messages.append(HumanMessage(content=msg["content"]))
                 elif msg["role"] == "assistant":
                     lc_messages.append(AIMessage(content=msg["content"]))
-            response = client.invoke(lc_messages)
+            response = llm.invoke(lc_messages)
             assistant_reply = response.content.strip()
-        except Exception as e:
-            # Try fallback model
+        except Exception:
             try:
-                client.model_name = "mixtral-8x7b-32768"
-                response = client.invoke(lc_messages)
+                fallback = ChatGroq(api_key=os.environ.get("GROQ_API_KEY", "").strip(), model="llama-3.1-8b-instant")
+                response = fallback.invoke(lc_messages)
                 assistant_reply = response.content.strip()
             except Exception as e2:
                 assistant_reply = f"(LLM error: {str(e2)})"
     else:
         assistant_reply = "LLM is not configured. Please set a valid GROQ_API_KEY in the environment."
 
-    # Store this exchange in session history (without the context/rag noise)
-    history.append({"role": "user", "content": user_message})
+    # Store exchange in session history (include prediction note so follow-ups stay in context)
+    stored_user = user_message
+    if prediction and prediction.get('label'):
+        note = (
+            f"[Uploaded skin image — prediction: {_display_disease(prediction['label'])} "
+            f"({prediction['confidence']}% confidence)]"
+        )
+        stored_user = f"{user_message}\n{note}".strip() if user_message else note
+
+    history.append({"role": "user", "content": stored_user})
     history.append({"role": "assistant", "content": assistant_reply})
 
     # Trim old history if needed
@@ -235,6 +399,7 @@ def chat():
         'prediction': prediction,
         'image_url': image_url,
         'accuracy': prediction.get('accuracy') if prediction else get_session_accuracy(),
+        'analytics': dict(_session_analytics.get(session_id, {})),
     })
 
 
