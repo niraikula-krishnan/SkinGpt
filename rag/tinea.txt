@@ -1,4 +1,4 @@
-DISEASE: Tinea
+	DISEASE: Tinea
 ALSO KNOWN AS: Ringworm, Athlete's Foot, Jock Itch, Fungal Infection
 
 OVERVIEW:
