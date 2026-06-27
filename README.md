@@ -140,7 +140,7 @@ Type the image path when prompted. Type `quit` to exit.
 
 ## 🚀 Deploy to Hugging Face Spaces (Free)
 
-[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Try%20on%20Spaces-available-brightgreen)](https://huggingface.co/spaces/niraikula-krishnan/skingpt)
+[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Try%20on%20Spaces-available-brightgreen)](https://huggingface.co/spaces/niraikula-krishnan/SkinGpt)
 
 ### One-click deployment:
 
