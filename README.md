@@ -1,4 +1,19 @@
+---
+title: SkinGPT
+emoji: 🩺
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 7860
+pinned: false
+license: mit
+---
+
 # SkinGPT AI — Skin Disease Classifier & Chat Assistant
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](Colab_SkinDisease_Training.ipynb)
+[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-yellow)](https://huggingface.co/spaces/niraikula-krishnan/SkinGpt)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-SkinGpt-181717?logo=github)](https://github.com/niraikula-krishnan/SkinGpt)
 
 An AI-powered web app that detects skin diseases from uploaded images and lets you chat with an LLM assistant for deeper insights.
 
@@ -120,6 +135,40 @@ Type the image path when prompted. Type `quit` to exit.
 | LLM Framework | LangChain (`ChatGroq`, `RunnableWithMessageHistory`) |
 | RAG | Scikit-learn TF-IDF cosine similarity |
 | Frontend | HTML, CSS, Vanilla JavaScript |
+
+---
+
+## 🚀 Deploy to Hugging Face Spaces (Free)
+
+[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Try%20on%20Spaces-available-brightgreen)](https://huggingface.co/spaces/niraikula-krishnan/skingpt)
+
+### One-click deployment:
+
+1. Go to [huggingface.co/spaces](https://huggingface.co/spaces) → **Create new Space**
+2. Name: `SkinGpt` | SDK: **Docker**
+3. Connect your GitHub repo: `https://github.com/niraikula-krishnan/SkinGpt`
+4. Set these **Secrets** in Space settings:
+   - `GROQ_API_KEY` — your Groq API key (get one free at console.groq.com)
+   - `FLASK_SECRET_KEY` — any random string
+5. The Space will auto-build and give you a public URL like:  
+   `https://niraikula-krishnan-skingpt.hf.space`  
+   (or open [huggingface.co/spaces/niraikula-krishnan/SkinGpt](https://huggingface.co/spaces/niraikula-krishnan/SkinGpt))
+
+> **Note:** The model file (`skin_model.h5`, ~17MB) is already in the repo.  
+> HF Spaces auto-detects `requirements.txt` and runs `app.py`.
+
+---
+
+## 📓 Google Colab Notebook
+
+Train the model yourself in the cloud:
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](Colab_SkinDisease_Training.ipynb)
+
+1. Open the notebook via the badge above
+2. Upload your `disease.zip` dataset
+3. Run all cells — it trains a CNN and saves `skin_model.h5`
+4. Download the trained model and use it with this app
 
 ---
 
