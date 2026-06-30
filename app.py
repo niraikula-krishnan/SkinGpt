@@ -6,6 +6,7 @@ import tensorflow as tf
 from dotenv import load_dotenv
 from PIL import Image as PILImage
 from rag import retrieve
+import db
 
 load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env'))
 
@@ -41,6 +42,7 @@ def get_llm_client():
 get_llm_client()
 
 app = Flask(__name__)
+db.init_db()
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, UPLOAD_FOLDER)
 app.secret_key = os.environ.get(
     'FLASK_SECRET_KEY',
@@ -146,8 +148,6 @@ def uploaded_file(filename):
 
 # In-memory session store: session_id -> list of {"role", "content"} dicts
 _session_store: dict[str, list[dict]] = {}
-_session_analytics: dict[str, dict[str, int]] = {}
-_session_last_disease: dict[str, str | None] = {}
 _session_meta: dict[str, dict] = {}
 MAX_HISTORY = 20  # keep last 20 messages (10 turns)
 
@@ -183,22 +183,16 @@ def _find_diseases_ordered(text: str) -> list[str]:
     return ordered
 
 
-def _record_disease(session_id: str, disease: str) -> None:
-    """Count a disease only when it changes from the previous one in this session."""
-    display = _display_disease(disease)
-    if _session_last_disease.get(session_id) == display:
-        return
-    counts = _session_analytics.setdefault(session_id, {})
-    counts[display] = counts.get(display, 0) + 1
-    _session_last_disease[session_id] = display
+def _record_disease(user_number: str, disease: str) -> None:
+    db.record_disease(user_number, disease, _display_disease)
 
 
-def _update_session_analytics(session_id: str, user_message: str, prediction_label: str = '') -> None:
+def _update_user_analytics(user_number: str, user_message: str, prediction_label: str = '') -> None:
     if prediction_label:
-        _record_disease(session_id, prediction_label)
+        _record_disease(user_number, prediction_label)
     if user_message and not _is_analytics_request(user_message):
         for disease in _find_diseases_ordered(user_message):
-            _record_disease(session_id, disease)
+            _record_disease(user_number, disease)
 
 
 def _is_analytics_request(text: str) -> bool:
@@ -220,7 +214,7 @@ def _is_analytics_request(text: str) -> bool:
     return any(p in t for p in triggers)
 
 
-def _session_context_block(session_id: str) -> str:
+def _session_context_block(session_id: str, user_number: str) -> str:
     """Brief summary so the LLM can answer follow-ups in the same chat session."""
     parts: list[str] = []
     meta = _session_meta.get(session_id, {})
@@ -230,10 +224,10 @@ def _session_context_block(session_id: str) -> str:
             f"Latest image prediction in this chat: {last_pred['label']} "
             f"({last_pred['confidence']}% confidence)"
         )
-    counts = _session_analytics.get(session_id, {})
+    counts = db.get_analytics(user_number)
     if counts:
         summary = ', '.join(f"{name} ({count}x)" for name, count in counts.items())
-        parts.append(f"Diseases discussed this session: {summary}")
+        parts.append(f"Diseases discussed for {user_number}: {summary}")
     if not parts:
         return ''
     return (
@@ -255,6 +249,17 @@ def _update_session_meta(session_id: str, prediction: dict | None, user_message:
             meta['last_topic'] = diseases[-1]
 
 
+@app.route('/api/users')
+def api_users():
+    return jsonify({'users': db.list_users(), 'mysql': db.db_active()})
+
+
+@app.route('/api/session/reset', methods=['POST'])
+def api_session_reset():
+    db.reset_all_users()
+    return jsonify({'ok': True, 'message': 'Analytics reset for all users'})
+
+
 @app.route('/chat', methods=['GET', 'POST'])
 def chat():
     if request.method == 'GET':
@@ -262,6 +267,7 @@ def chat():
 
     user_message = request.form.get('message', '').strip()
     session_id = request.form.get('session_id', 'default')
+    user_number = request.form.get('user_number', 'user_1')
     image = request.files.get('image')
     prediction = None
     image_url = None
@@ -310,17 +316,17 @@ def chat():
     history = _session_store[session_id]
 
     if _is_analytics_request(user_message):
-        counts = dict(_session_analytics.get(session_id, {}))
+        counts = db.get_analytics(user_number)
         if counts:
             assistant_reply = (
-                'Here is your session analytics. Each bar shows how many separate times '
-                'you discussed each disease in this session (repeated back-to-back questions '
-                'about the same disease count once until you switch to another disease).'
+                f'Here is analytics for {user_number.replace("_", " ").title()}. '
+                'Each bar shows how many separate times you discussed each disease '
+                '(back-to-back questions about the same disease count once until you switch to another).'
             )
         else:
             assistant_reply = (
-                'No analytics yet for this session. Upload a skin image or ask about a disease first, '
-                'then request analytics again.'
+                f'No analytics yet for {user_number.replace("_", " ").title()}. '
+                'Upload a skin image or ask about a disease first, then request analytics again.'
             )
         history.append({"role": "user", "content": user_message})
         history.append({"role": "assistant", "content": assistant_reply})
@@ -333,12 +339,13 @@ def chat():
             'accuracy': prediction.get('accuracy') if prediction else get_session_accuracy(),
             'show_chart': bool(counts),
             'analytics': counts,
+            'user_number': user_number,
         })
 
-    _update_session_analytics(session_id, user_message, prediction_label)
+    _update_user_analytics(user_number, user_message, prediction_label)
     _update_session_meta(session_id, prediction, user_message)
 
-    session_ctx = _session_context_block(session_id)
+    session_ctx = _session_context_block(session_id, user_number)
     full_system_prompt = system_prompt
     if session_ctx:
         full_system_prompt += f'\n\n{session_ctx}'
@@ -399,7 +406,8 @@ def chat():
         'prediction': prediction,
         'image_url': image_url,
         'accuracy': prediction.get('accuracy') if prediction else get_session_accuracy(),
-        'analytics': dict(_session_analytics.get(session_id, {})),
+        'analytics': db.get_analytics(user_number),
+        'user_number': user_number,
     })
 
 
