@@ -4,37 +4,45 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SkinGPT — AI Skin Disease Predictor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: #f8fafc;
-      color: #1e293b;
+      font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #f1f5f9;
+      color: #0f172a;
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
     }
 
     nav {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 40px;
+      padding: 16px 48px;
       background: #ffffff;
       border-bottom: 1px solid #e2e8f0;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
     }
     .nav-logo {
-      display: flex; align-items: center; gap: 10px;
-      font-weight: 600; font-size: 1rem; color: #0f172a;
+      display: flex; align-items: center; gap: 12px;
+      font-weight: 700; font-size: 1rem; color: #0f172a;
     }
-    .nav-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: #2563eb;
+    .nav-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff; display: flex; align-items: center; justify-content: center;
+      font-size: .9rem; font-weight: 700;
     }
+    .nav-tag { font-size: .78rem; color: #64748b; font-weight: 500; }
 
     .page {
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      min-height: calc(100vh - 65px);
-      padding: 60px 24px;
+      min-height: calc(100vh - 69px);
+      padding: 72px 24px 48px;
       text-align: center;
+      background: radial-gradient(ellipse at top, #eff6ff 0%, #f1f5f9 55%);
     }
 
     .badge {
@@ -69,12 +77,13 @@
     .cta-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
     .cta {
       display: inline-flex; align-items: center; gap: 10px;
-      padding: 14px 32px; border-radius: 8px;
+      padding: 15px 36px; border-radius: 12px;
       background: #2563eb; color: #fff;
       font-size: 1rem; font-weight: 600; text-decoration: none;
-      transition: background .15s;
+      transition: background .15s, transform .15s, box-shadow .15s;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
     }
-    .cta:hover { background: #1d4ed8; }
+    .cta:hover { background: #1d4ed8; transform: translateY(-1px); }
     .cta-note { font-size: .8rem; color: #94a3b8; }
 
     .how { max-width: 860px; margin: 0 auto; padding: 48px 24px 40px; }
@@ -126,9 +135,13 @@
 
 <nav>
   <div class="nav-logo">
-    <span class="nav-dot"></span>
-    SkinGPT AI
+    <span class="nav-icon">S</span>
+    <div>
+      SkinGPT AI
+      <div class="nav-tag">Dermatology assistant</div>
+    </div>
   </div>
+  <a href="/chat" style="font-size:.85rem;color:#2563eb;text-decoration:none;font-weight:600;">Open chat →</a>
 </nav>
 
 <div class="page">
@@ -169,7 +182,7 @@
     <div class="step">
       <div class="step-num">💬</div>
       <div class="step-title">3. Chat</div>
-      <div class="step-desc">Ask follow-up questions about the condition, causes, and next steps.</div>
+      <div class="step-desc">Add session users, ask follow-up questions, and track per-user analytics.</div>
     </div>
   </div>
 </section>

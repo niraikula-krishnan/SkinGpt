@@ -1,23 +1,18 @@
-"""MySQL storage for per-user disease analytics (3 users). Falls back to memory if DB unavailable."""
+"""MySQL storage for per-user disease analytics. Users are added dynamically per session."""
 
 import json
 import os
+import uuid
 from contextlib import contextmanager
 
 import pymysql
 from pymysql.cursors import DictCursor
 
-USERS = [
-    ('user_1', 'User 1'),
-    ('user_2', 'User 2'),
-    ('user_3', 'User 3'),
-]
-
-_memory: dict[str, dict] = {
-    uid: {'analytics': {}, 'last_disease': None, 'user_label': label}
-    for uid, label in USERS
-}
+_memory: dict[str, dict] = {}
 _mysql_ok = False
+
+DEFAULT_USER_NUMBER = 'user_1'
+DEFAULT_USER_LABEL = 'User 1'
 
 
 def _mysql_configured() -> bool:
@@ -42,7 +37,7 @@ def _connection():
 
 
 def init_db() -> bool:
-    """Create database, table, and seed 3 users. Returns True if MySQL is active."""
+    """Create database and table. Does not seed users — they are added per session."""
     global _mysql_ok
     if not _mysql_configured():
         _mysql_ok = False
@@ -68,21 +63,22 @@ def init_db() -> bool:
             with conn.cursor() as cur:
                 cur.execute("""
                     CREATE TABLE IF NOT EXISTS user_analytics (
-                        user_number VARCHAR(20) PRIMARY KEY,
-                        user_label VARCHAR(50) NOT NULL,
+                        user_number VARCHAR(32) PRIMARY KEY,
+                        user_label VARCHAR(80) NOT NULL,
                         analytics JSON NOT NULL,
-                        last_disease VARCHAR(100) DEFAULT NULL
+                        last_disease VARCHAR(100) DEFAULT NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
                 """)
-                for uid, label in USERS:
-                    cur.execute(
-                        """
-                        INSERT INTO user_analytics (user_number, user_label, analytics)
-                        VALUES (%s, %s, %s)
-                        ON DUPLICATE KEY UPDATE user_label = VALUES(user_label)
-                        """,
-                        (uid, label, json.dumps({})),
-                    )
+                for stmt in (
+                    "ALTER TABLE user_analytics MODIFY user_number VARCHAR(32)",
+                    "ALTER TABLE user_analytics MODIFY user_label VARCHAR(80)",
+                    "ALTER TABLE user_analytics ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+                ):
+                    try:
+                        cur.execute(stmt)
+                    except Exception:
+                        pass
         _mysql_ok = True
         return True
     except Exception as exc:
@@ -95,38 +91,132 @@ def db_active() -> bool:
     return _mysql_ok
 
 
-def list_users() -> list[dict]:
+def _parse_analytics(raw) -> dict:
+    if isinstance(raw, str):
+        return json.loads(raw) if raw else {}
+    return raw or {}
+
+
+def _fetch_users() -> list[dict]:
     if _mysql_ok:
         with _connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    'SELECT user_number, user_label, analytics, last_disease FROM user_analytics ORDER BY user_number'
+                    'SELECT user_number, user_label, analytics FROM user_analytics ORDER BY created_at'
                 )
                 rows = cur.fetchall()
-        result = []
-        for row in rows:
-            analytics = row['analytics']
-            if isinstance(analytics, str):
-                analytics = json.loads(analytics)
-            result.append({
+        return [
+            {
                 'user_number': row['user_number'],
                 'user_label': row['user_label'],
-                'analytics': analytics or {},
-            })
-        return result
+                'analytics': _parse_analytics(row['analytics']),
+            }
+            for row in rows
+        ]
 
     return [
         {
             'user_number': uid,
-            'user_label': _memory[uid]['user_label'],
-            'analytics': dict(_memory[uid]['analytics']),
+            'user_label': data['user_label'],
+            'analytics': dict(data['analytics']),
         }
-        for uid, _ in USERS
+        for uid, data in _memory.items()
     ]
 
 
+def seed_default_user() -> dict:
+    """Ensure User 1 exists at the start of each session."""
+    if user_exists(DEFAULT_USER_NUMBER):
+        return {
+            'user_number': DEFAULT_USER_NUMBER,
+            'user_label': DEFAULT_USER_LABEL,
+            'analytics': get_analytics(DEFAULT_USER_NUMBER),
+        }
+    row = {
+        'user_number': DEFAULT_USER_NUMBER,
+        'user_label': DEFAULT_USER_LABEL,
+        'analytics': {},
+    }
+    if _mysql_ok:
+        with _connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO user_analytics (user_number, user_label, analytics)
+                    VALUES (%s, %s, %s)
+                    """,
+                    (DEFAULT_USER_NUMBER, DEFAULT_USER_LABEL, json.dumps({})),
+                )
+    else:
+        _memory[DEFAULT_USER_NUMBER] = {
+            'user_label': DEFAULT_USER_LABEL,
+            'analytics': {},
+            'last_disease': None,
+        }
+    return row
+
+
+def list_users() -> list[dict]:
+    users = _fetch_users()
+    if not users:
+        seed_default_user()
+        users = _fetch_users()
+    return users
+
+
+def user_exists(user_number: str) -> bool:
+    if not user_number:
+        return False
+    if _mysql_ok:
+        with _connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    'SELECT 1 FROM user_analytics WHERE user_number = %s LIMIT 1',
+                    (user_number,),
+                )
+                return cur.fetchone() is not None
+    return user_number in _memory
+
+
+def get_user_label(user_number: str) -> str:
+    if not user_number:
+        return 'Unknown'
+    if _mysql_ok:
+        with _connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    'SELECT user_label FROM user_analytics WHERE user_number = %s',
+                    (user_number,),
+                )
+                row = cur.fetchone()
+        return row['user_label'] if row else user_number
+    return _memory.get(user_number, {}).get('user_label', user_number)
+
+
+def create_user(user_label: str) -> dict:
+    label = (user_label or '').strip() or f'User {len(list_users()) + 1}'
+    user_number = f'u_{uuid.uuid4().hex[:8]}'
+    row = {'user_number': user_number, 'user_label': label, 'analytics': {}}
+
+    if _mysql_ok:
+        with _connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO user_analytics (user_number, user_label, analytics)
+                    VALUES (%s, %s, %s)
+                    """,
+                    (user_number, label, json.dumps({})),
+                )
+        return row
+
+    _memory[user_number] = {'user_label': label, 'analytics': {}, 'last_disease': None}
+    return row
+
+
 def get_analytics(user_number: str) -> dict[str, int]:
-    user_number = _valid_user(user_number)
+    if not user_exists(user_number):
+        return {}
     if _mysql_ok:
         with _connection() as conn:
             with conn.cursor() as cur:
@@ -135,12 +225,7 @@ def get_analytics(user_number: str) -> dict[str, int]:
                     (user_number,),
                 )
                 row = cur.fetchone()
-        if not row:
-            return {}
-        analytics = row['analytics']
-        if isinstance(analytics, str):
-            analytics = json.loads(analytics)
-        return analytics or {}
+        return _parse_analytics(row['analytics']) if row else {}
 
     return dict(_memory[user_number]['analytics'])
 
@@ -155,7 +240,7 @@ def _get_last_disease(user_number: str) -> str | None:
                 )
                 row = cur.fetchone()
         return row['last_disease'] if row else None
-    return _memory[user_number]['last_disease']
+    return _memory.get(user_number, {}).get('last_disease')
 
 
 def _set_user_state(user_number: str, analytics: dict, last_disease: str | None) -> None:
@@ -172,13 +257,14 @@ def _set_user_state(user_number: str, analytics: dict, last_disease: str | None)
                 )
         return
 
-    _memory[user_number]['analytics'] = dict(analytics)
-    _memory[user_number]['last_disease'] = last_disease
+    if user_number in _memory:
+        _memory[user_number]['analytics'] = dict(analytics)
+        _memory[user_number]['last_disease'] = last_disease
 
 
 def record_disease(user_number: str, disease: str, display_fn) -> dict[str, int]:
-    """Increment disease count only when it differs from the previous disease for this user."""
-    user_number = _valid_user(user_number)
+    if not user_exists(user_number):
+        return {}
     display = display_fn(disease)
     last = _get_last_disease(user_number)
     counts = get_analytics(user_number)
@@ -191,24 +277,11 @@ def record_disease(user_number: str, disease: str, display_fn) -> dict[str, int]
 
 
 def reset_all_users() -> None:
-    """Clear analytics for all users (called on browser session refresh)."""
+    """Clear session and restore default User 1 (browser refresh)."""
+    global _memory
+    _memory = {}
     if _mysql_ok:
         with _connection() as conn:
             with conn.cursor() as cur:
-                cur.execute(
-                    "UPDATE user_analytics SET analytics = %s, last_disease = NULL",
-                    (json.dumps({}),),
-                )
-        return
-
-    for uid in _memory:
-        _memory[uid]['analytics'] = {}
-        _memory[uid]['last_disease'] = None
-
-
-def _valid_user(user_number: str) -> str:
-    allowed = {uid for uid, _ in USERS}
-    if user_number in allowed:
-        return user_number
-    return 'user_1'
-    
+                cur.execute('DELETE FROM user_analytics')
+    seed_default_user()

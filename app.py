@@ -249,15 +249,22 @@ def _update_session_meta(session_id: str, prediction: dict | None, user_message:
             meta['last_topic'] = diseases[-1]
 
 
-@app.route('/api/users')
+@app.route('/api/users', methods=['GET', 'POST'])
 def api_users():
+    if request.method == 'POST':
+        data = request.get_json(silent=True) or {}
+        label = (data.get('user_label') or request.form.get('user_label', '')).strip()
+        if not label:
+            return jsonify({'error': 'user_label is required'}), 400
+        user = db.create_user(label)
+        return jsonify({'user': user, 'users': db.list_users()}), 201
     return jsonify({'users': db.list_users(), 'mysql': db.db_active()})
 
 
 @app.route('/api/session/reset', methods=['POST'])
 def api_session_reset():
     db.reset_all_users()
-    return jsonify({'ok': True, 'message': 'Analytics reset for all users'})
+    return jsonify({'ok': True, 'message': 'Session reset — User 1 restored'})
 
 
 @app.route('/chat', methods=['GET', 'POST'])
@@ -267,7 +274,20 @@ def chat():
 
     user_message = request.form.get('message', '').strip()
     session_id = request.form.get('session_id', 'default')
-    user_number = request.form.get('user_number', 'user_1')
+    user_number = request.form.get('user_number', '').strip()
+    if user_number and not db.user_exists(user_number):
+        user_number = ''
+
+    if not user_number:
+        return jsonify({
+            'reply': 'Please add and select a user in the sidebar before sending messages.',
+            'prediction': None,
+            'image_url': None,
+            'accuracy': None,
+            'show_chart': False,
+            'analytics': {},
+            'user_number': '',
+        })
     image = request.files.get('image')
     prediction = None
     image_url = None
@@ -317,15 +337,16 @@ def chat():
 
     if _is_analytics_request(user_message):
         counts = db.get_analytics(user_number)
+        label = db.get_user_label(user_number)
         if counts:
             assistant_reply = (
-                f'Here is analytics for {user_number.replace("_", " ").title()}. '
+                f'Here is analytics for {label}. '
                 'Each bar shows how many separate times you discussed each disease '
                 '(back-to-back questions about the same disease count once until you switch to another).'
             )
         else:
             assistant_reply = (
-                f'No analytics yet for {user_number.replace("_", " ").title()}. '
+                f'No analytics yet for {label}. '
                 'Upload a skin image or ask about a disease first, then request analytics again.'
             )
         history.append({"role": "user", "content": user_message})

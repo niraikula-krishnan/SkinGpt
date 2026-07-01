@@ -4,14 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SkinGPT — AI Chat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
       height: 100%;
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: #f8fafc;
-      color: #1e293b;
+      font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #f1f5f9;
+      color: #0f172a;
+      -webkit-font-smoothing: antialiased;
     }
 
     body { display: flex; flex-direction: column; overflow: hidden; }
@@ -19,37 +22,112 @@
     .app { flex: 1; display: flex; min-height: 0; }
 
     .sidebar {
-      width: 260px; flex-shrink: 0;
+      width: 280px; flex-shrink: 0;
       background: #ffffff;
       border-right: 1px solid #e2e8f0;
       display: flex; flex-direction: column; min-height: 0;
+      box-shadow: 1px 0 0 rgba(15, 23, 42, 0.04);
     }
 
-    .sidebar-top { padding: 14px 12px; border-bottom: 1px solid #e2e8f0; }
+    .sidebar-brand {
+      padding: 18px 16px 12px;
+      display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .brand-icon {
+      width: 34px; height: 34px; border-radius: 10px;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff; display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; font-weight: 700;
+    }
+    .brand-text strong { display: block; font-size: .92rem; color: #0f172a; }
+    .brand-text span { font-size: .72rem; color: #94a3b8; }
+
+    .sidebar-top { padding: 12px 14px; }
 
     .sidebar-new {
-      width: 100%; padding: 9px 14px; border-radius: 8px;
-      border: 1px solid #cbd5e1; background: #f8fafc;
-      color: #334155; font-size: .85rem; font-weight: 600;
+      width: 100%; padding: 10px 14px; border-radius: 10px;
+      border: 1px solid #dbeafe; background: #eff6ff;
+      color: #1d4ed8; font-size: .84rem; font-weight: 600;
       cursor: pointer; transition: background .15s, border-color .15s;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
     }
-    .sidebar-new:hover { background: #f1f5f9; border-color: #94a3b8; }
+    .sidebar-new:hover { background: #dbeafe; border-color: #93c5fd; }
 
-    .user-switcher { padding: 10px 12px 8px; border-bottom: 1px solid #e2e8f0; }
+    .user-switcher {
+      padding: 12px 14px;
+      border-top: 1px solid #f1f5f9;
+      border-bottom: 1px solid #f1f5f9;
+      background: #fafbfc;
+    }
+    .user-switcher-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
     .user-switcher-label {
-      font-size: .7rem; color: #94a3b8; text-transform: uppercase;
-      letter-spacing: .05em; margin-bottom: 8px; font-weight: 600;
+      font-size: .68rem; color: #64748b; text-transform: uppercase;
+      letter-spacing: .06em; font-weight: 700;
     }
-    .user-btns { display: flex; flex-direction: column; gap: 4px; }
+    .add-user-btn {
+      padding: 4px 10px; border-radius: 6px;
+      border: 1px solid #cbd5e1; background: #ffffff;
+      color: #475569; font-size: .72rem; font-weight: 600;
+      cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+    }
+    .add-user-btn:hover { background: #f8fafc; color: #2563eb; border-color: #93c5fd; }
+
+    .add-user-form {
+      display: none; gap: 8px; margin-bottom: 10px;
+    }
+    .add-user-form.show { display: flex; flex-direction: column; }
+    .add-user-form input {
+      padding: 9px 11px; border-radius: 8px;
+      border: 1px solid #cbd5e1; font-size: .84rem;
+      outline: none; background: #ffffff;
+    }
+    .add-user-form input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+    .add-user-actions { display: flex; gap: 6px; }
+    .add-user-actions button {
+      flex: 1; padding: 8px; border-radius: 8px; font-size: .78rem; font-weight: 600; cursor: pointer;
+    }
+    .btn-create { background: #2563eb; color: #fff; border: none; }
+    .btn-create:hover { background: #1d4ed8; }
+    .btn-cancel { background: #fff; color: #64748b; border: 1px solid #e2e8f0; }
+    .btn-cancel:hover { background: #f8fafc; }
+
+    .user-btns { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
+    .user-empty {
+      padding: 14px 12px; border-radius: 10px;
+      border: 1px dashed #cbd5e1; background: #ffffff;
+      text-align: center; font-size: .78rem; color: #94a3b8; line-height: 1.5;
+    }
     .user-btn {
-      padding: 8px 10px; border-radius: 6px;
+      padding: 0; border-radius: 10px;
       border: 1px solid #e2e8f0; background: #ffffff;
-      color: #64748b; font-size: .82rem; cursor: pointer; text-align: left;
-      transition: background .15s, border-color .15s, color .15s;
+      color: #475569; font-size: .82rem; cursor: pointer; text-align: left;
+      transition: background .15s, border-color .15s, box-shadow .15s;
+      display: flex; align-items: center; gap: 10px; overflow: hidden;
     }
-    .user-btn:hover { background: #f8fafc; color: #334155; }
+    .user-btn:hover { background: #f8fafc; border-color: #cbd5e1; }
     .user-btn.active {
-      background: #eff6ff; border-color: #2563eb; color: #1d4ed8; font-weight: 600;
+      background: #eff6ff; border-color: #2563eb;
+      box-shadow: 0 0 0 1px rgba(37,99,235,.15);
+    }
+    .user-avatar {
+      width: 36px; height: 36px; flex-shrink: 0;
+      background: #e2e8f0; color: #475569;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .75rem; font-weight: 700;
+    }
+    .user-btn.active .user-avatar { background: #2563eb; color: #fff; }
+    .user-meta { flex: 1; padding: 8px 10px 8px 0; min-width: 0; }
+    .user-name { font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-btn.active .user-name { color: #1d4ed8; }
+    .user-stat { font-size: .7rem; color: #94a3b8; margin-top: 2px; }
+
+    .sidebar-section-label {
+      padding: 10px 14px 6px; font-size: .68rem; color: #94a3b8;
+      text-transform: uppercase; letter-spacing: .06em; font-weight: 700;
     }
 
     .chat-list {
@@ -70,7 +148,7 @@
 
     header {
       display: flex; align-items: center; gap: 12px;
-      padding: 14px 24px; background: #ffffff;
+      padding: 14px 28px; background: #ffffff;
       border-bottom: 1px solid #e2e8f0; flex-shrink: 0;
     }
     .back-btn {
@@ -80,12 +158,18 @@
     .back-btn:hover { color: #2563eb; }
     .h-dot { width: 8px; height: 8px; border-radius: 50%; background: #2563eb; }
     header strong { font-size: 1rem; color: #0f172a; font-weight: 600; }
-    .accuracy-badge {
-      margin-left: auto; font-size: .78rem; color: #64748b;
-      background: #f8fafc; border: 1px solid #e2e8f0;
-      padding: 5px 12px; border-radius: 6px;
+    .active-user-pill {
+      font-size: .76rem; color: #1d4ed8; background: #eff6ff;
+      border: 1px solid #bfdbfe; padding: 5px 12px; border-radius: 999px;
+      font-weight: 600; max-width: 180px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .accuracy-badge.has-value { color: #1d4ed8; background: #eff6ff; border-color: #bfdbfe; }
+    .active-user-pill.empty { color: #94a3b8; background: #f8fafc; border-color: #e2e8f0; }
+    .accuracy-badge {
+      margin-left: auto; font-size: .76rem; color: #64748b;
+      background: #f8fafc; border: 1px solid #e2e8f0;
+      padding: 5px 12px; border-radius: 999px;
+    }
 
     .messages { flex: 1; overflow-y: auto; padding: 24px 0; display: flex; flex-direction: column; }
 
@@ -154,22 +238,37 @@
     .welcome {
       flex: 1; display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      gap: 14px; text-align: center; padding: 40px 24px;
+      gap: 16px; text-align: center; padding: 48px 24px;
     }
-    .welcome-icon { font-size: 2.5rem; }
-    .welcome h2 { font-size: 1.35rem; color: #0f172a; font-weight: 600; }
-    .welcome p { font-size: .92rem; max-width: 400px; line-height: 1.65; color: #64748b; }
+    .welcome-icon {
+      width: 64px; height: 64px; border-radius: 16px;
+      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      border: 1px solid #bfdbfe;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem;
+    }
+    .welcome h2 { font-size: 1.4rem; color: #0f172a; font-weight: 700; letter-spacing: -.02em; }
+    .welcome p { font-size: .92rem; max-width: 420px; line-height: 1.65; color: #64748b; }
+    .welcome-steps {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 8px;
+    }
+    .welcome-step {
+      padding: 8px 14px; border-radius: 999px; font-size: .78rem;
+      background: #ffffff; border: 1px solid #e2e8f0; color: #475569;
+    }
 
     .input-area {
-      flex-shrink: 0; padding: 16px 24px 20px;
+      flex-shrink: 0; padding: 18px 28px 24px;
       background: #ffffff; border-top: 1px solid #e2e8f0;
     }
+    .input-area.disabled { opacity: .65; pointer-events: none; }
 
     .input-box {
-      max-width: 720px; margin: 0 auto;
-      display: flex; align-items: center; gap: 10px;
-      background: #f8fafc; border: 1px solid #cbd5e1;
-      border-radius: 10px; padding: 8px 10px 8px 16px;
+      max-width: 760px; margin: 0 auto;
+      display: flex; align-items: flex-end; gap: 10px;
+      background: #ffffff; border: 1px solid #cbd5e1;
+      border-radius: 14px; padding: 10px 12px 10px 16px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
     }
     .input-box:focus-within { border-color: #2563eb; background: #ffffff; }
 
@@ -191,8 +290,10 @@
     .attach-btn svg { width: 16px; height: 16px; stroke: #64748b; fill: none; }
     #imgFile { display: none; }
 
+    .accuracy-badge.has-value { color: #1d4ed8; background: #eff6ff; border-color: #bfdbfe; }
+
     .send-btn {
-      width: 34px; height: 34px; border-radius: 6px;
+      width: 38px; height: 38px; border-radius: 10px;
       background: #2563eb; border: none; cursor: pointer; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center; opacity: .45;
     }
@@ -259,13 +360,31 @@
 
 <div class="app">
   <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">S</div>
+      <div class="brand-text">
+        <strong>SkinGPT</strong>
+        <span>Clinical AI Assistant</span>
+      </div>
+    </div>
     <div class="sidebar-top">
       <button type="button" class="sidebar-new" id="newChatBtn">+ New chat</button>
     </div>
     <div class="user-switcher">
-      <div class="user-switcher-label">Active user</div>
+      <div class="user-switcher-head">
+        <span class="user-switcher-label">Session users</span>
+        <button type="button" class="add-user-btn" id="addUserBtn">+ Add</button>
+      </div>
+      <div class="add-user-form" id="addUserForm">
+        <input type="text" id="newUserLabel" placeholder="e.g. Patient A, Dr. Smith" maxlength="60">
+        <div class="add-user-actions">
+          <button type="button" class="btn-create" id="createUserBtn">Create user</button>
+          <button type="button" class="btn-cancel" id="cancelAddUserBtn">Cancel</button>
+        </div>
+      </div>
       <div class="user-btns" id="userBtns"></div>
     </div>
+    <div class="sidebar-section-label">Conversations</div>
     <div class="chat-list" id="chatList"></div>
   </aside>
 
@@ -277,18 +396,24 @@
       </a>
       <span class="h-dot"></span>
       <strong>SkinGPT AI</strong>
-      <span class="accuracy-badge" id="accuracyBadge">Session Accuracy: —</span>
+      <span class="active-user-pill empty" id="activeUserPill">No user selected</span>
+      <span class="accuracy-badge" id="accuracyBadge">Accuracy: —</span>
     </header>
 
     <div class="messages" id="messages">
       <div class="welcome" id="welcome">
         <div class="welcome-icon">🩺</div>
         <h2>How can I help you today?</h2>
-        <p>Upload a skin image and ask a question.</p>
+        <p>User 1 is ready by default. Upload a skin image or ask a question — use + Add to create more users if needed.</p>
+        <div class="welcome-steps">
+          <span class="welcome-step">1. Chat as User 1</span>
+          <span class="welcome-step">2. Upload image</span>
+          <span class="welcome-step">3. Ask follow-ups</span>
+        </div>
       </div>
     </div>
 
-    <div class="input-area">
+    <div class="input-area" id="inputArea">
       <form id="chatForm">
         <div class="preview-pill" id="previewPill">
           <img id="previewImg" src="" alt="">
@@ -302,7 +427,7 @@
             </svg>
           </label>
           <input type="file" id="imgFile" accept="image/*">
-          <textarea id="msgInput" rows="1" placeholder="Ask about your skin condition…"></textarea>
+          <textarea id="msgInput" rows="1" placeholder="Select a user first, then ask about a skin condition…"></textarea>
           <button class="send-btn" id="sendBtn" type="submit" title="Send">
             <svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
           </button>
@@ -331,6 +456,13 @@
   const chatListEl  = document.getElementById('chatList');
   const userBtnsEl  = document.getElementById('userBtns');
   const newChatBtn  = document.getElementById('newChatBtn');
+  const addUserBtn  = document.getElementById('addUserBtn');
+  const addUserForm = document.getElementById('addUserForm');
+  const newUserLabel= document.getElementById('newUserLabel');
+  const createUserBtn = document.getElementById('createUserBtn');
+  const cancelAddUserBtn = document.getElementById('cancelAddUserBtn');
+  const activeUserPill = document.getElementById('activeUserPill');
+  const inputArea   = document.getElementById('inputArea');
 
   let CURRENT_USER = 'user_1';
   let usersList = [];
@@ -344,7 +476,38 @@
   const isReload = performance.getEntriesByType('navigation')[0]?.type === 'reload';
   if (isReload) {
     sessionStorage.removeItem(STORAGE_KEY);
-    resetSessionAnalytics();
+    resetSessionAnalytics().then(() => loadUsers());
+  }
+
+  function userInitials(label) {
+    const parts = (label || 'U').trim().split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return (parts[0] || 'U').slice(0, 2).toUpperCase();
+  }
+
+  function totalDiseases(analytics) {
+    return Object.values(analytics || {}).reduce((a, b) => a + b, 0);
+  }
+
+  function updateActiveUserPill() {
+    const u = usersList.find(x => x.user_number === CURRENT_USER);
+    if (u) {
+      activeUserPill.textContent = u.user_label;
+      activeUserPill.classList.remove('empty');
+    } else {
+      activeUserPill.textContent = 'No user selected';
+      activeUserPill.classList.add('empty');
+    }
+    updateInputState();
+  }
+
+  function updateInputState() {
+    const hasUser = Boolean(CURRENT_USER);
+    inputArea.classList.toggle('disabled', !hasUser);
+    msgInput.placeholder = hasUser
+      ? 'Ask about a skin condition or attach an image…'
+      : 'Select or add a user in the sidebar to start chatting…';
+    updateSendState();
   }
 
   async function loadUsers() {
@@ -352,28 +515,47 @@
       const res = await fetch('/api/users');
       const data = await res.json();
       usersList = data.users || [];
+      if (CURRENT_USER && !usersList.some(u => u.user_number === CURRENT_USER)) {
+        CURRENT_USER = usersList.length ? usersList[0].user_number : null;
+      }
+      if (!CURRENT_USER && usersList.length) CURRENT_USER = usersList[0].user_number;
+      if (!CURRENT_USER) CURRENT_USER = 'user_1';
       renderUserButtons();
+      updateActiveUserPill();
     } catch (_) {
-      usersList = [
-        { user_number: 'user_1', user_label: 'User 1', analytics: {} },
-        { user_number: 'user_2', user_label: 'User 2', analytics: {} },
-        { user_number: 'user_3', user_label: 'User 3', analytics: {} },
-      ];
+      usersList = [];
       renderUserButtons();
+      updateActiveUserPill();
     }
   }
 
   function renderUserButtons() {
     userBtnsEl.innerHTML = '';
+    if (!usersList.length) {
+      const empty = document.createElement('div');
+      empty.className = 'user-empty';
+      empty.textContent = 'Loading users…';
+      userBtnsEl.appendChild(empty);
+      return;
+    }
     usersList.forEach(u => {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'user-btn' + (u.user_number === CURRENT_USER ? ' active' : '');
-      const count = Object.keys(u.analytics || {}).length;
-      btn.textContent = count ? `${u.user_label} (${count} diseases)` : u.user_label;
+      const total = totalDiseases(u.analytics);
+      btn.innerHTML = `
+        <span class="user-avatar">${userInitials(u.user_label)}</span>
+        <span class="user-meta">
+          <span class="user-name">${escapeHtml(u.user_label)}</span>
+          <span class="user-stat">${total ? `${total} disease mention${total === 1 ? '' : 's'}` : 'No analytics yet'}</span>
+        </span>`;
       btn.addEventListener('click', () => switchUser(u.user_number));
       userBtnsEl.appendChild(btn);
     });
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
   function switchUser(userNumber) {
@@ -381,6 +563,7 @@
     const u = usersList.find(x => x.user_number === userNumber);
     if (u) getActiveChat().analytics = u.analytics || {};
     renderUserButtons();
+    updateActiveUserPill();
   }
 
   function syncUserAnalytics(analytics) {
@@ -390,7 +573,53 @@
     renderUserButtons();
   }
 
-  loadUsers();
+  function showAddUserForm() {
+    addUserForm.classList.add('show');
+    newUserLabel.value = '';
+    newUserLabel.focus();
+  }
+
+  function hideAddUserForm() {
+    addUserForm.classList.remove('show');
+    newUserLabel.value = '';
+  }
+
+  async function createUser() {
+    const label = newUserLabel.value.trim();
+    if (!label) {
+      newUserLabel.focus();
+      return;
+    }
+    createUserBtn.disabled = true;
+    try {
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_label: label }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not create user');
+      usersList = data.users || [];
+      CURRENT_USER = data.user?.user_number || CURRENT_USER;
+      hideAddUserForm();
+      renderUserButtons();
+      updateActiveUserPill();
+    } catch (err) {
+      alert(err.message || 'Failed to add user');
+    } finally {
+      createUserBtn.disabled = false;
+    }
+  }
+
+  addUserBtn.addEventListener('click', showAddUserForm);
+  createUserBtn.addEventListener('click', createUser);
+  cancelAddUserBtn.addEventListener('click', hideAddUserForm);
+  newUserLabel.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); createUser(); }
+    if (e.key === 'Escape') hideAddUserForm();
+  });
+
+  if (!isReload) loadUsers();
   if (!sessionStorage.getItem('disc_dismissed')) disc.style.display = 'flex';
   document.getElementById('disclaimerClose').addEventListener('click', () => {
     disc.style.display = 'none';
@@ -433,10 +662,10 @@
   function updateAccuracyBadge(accuracy) {
     const badge = document.getElementById('accuracyBadge');
     if (accuracy) {
-      badge.textContent = 'Session Accuracy: ' + accuracy + '%';
+      badge.textContent = 'Accuracy: ' + accuracy + '%';
       badge.classList.add('has-value');
     } else {
-      badge.textContent = 'Session Accuracy: —';
+      badge.textContent = 'Accuracy: —';
       badge.classList.remove('has-value');
     }
   }
@@ -646,7 +875,8 @@
   }
 
   function updateSendState() {
-    sendBtn.classList.toggle('ready', !!(msgInput.value.trim() || imgFile.files.length));
+    const ready = CURRENT_USER && (msgInput.value.trim() || imgFile.files.length);
+    sendBtn.classList.toggle('ready', Boolean(ready));
   }
 
   msgInput.addEventListener('input', () => {
@@ -677,6 +907,7 @@
 
   form.addEventListener('submit', async e => {
     e.preventDefault();
+    if (!CURRENT_USER) return;
     const text = msgInput.value.trim();
     if (!text && !imgFile.files.length) return;
 
@@ -712,7 +943,7 @@
     const data = new FormData();
     data.append('message', text);
     data.append('session_id', SESSION_ID);
-    data.append('user_number', CURRENT_USER);
+    data.append('user_number', CURRENT_USER || '');
     if (fileToSend) { data.append('image', fileToSend); imgFile.value = ''; }
 
     try {
@@ -758,6 +989,7 @@
 
   renderSidebar();
   renderMessages(getActiveChat());
+  updateInputState();
 </script>
 </body>
 </html>
