@@ -10,7 +10,7 @@ $src = $PSScriptRoot
 
 if (Test-Path $staging) { Remove-Item -Recurse -Force $staging }
 New-Item -ItemType Directory -Path $staging | Out-Null
-Copy-Item "$src\app.py","$src\rag.py","$src\requirements.txt","$src\Dockerfile","$src\README.md","$src\class_names.json","$src\skin_model.h5","$src\.dockerignore" -Destination $staging
+Copy-Item "$src\app.py","$src\db.py","$src\rag.py","$src\requirements.txt","$src\Dockerfile","$src\README.md","$src\class_names.json","$src\skin_model.h5","$src\.dockerignore" -Destination $staging
 Copy-Item "$src\templates" -Destination $staging -Recurse
 Copy-Item "$src\rag" -Destination $staging -Recurse
 
